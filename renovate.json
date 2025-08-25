@@ -1,50 +1,26 @@
 {
   "$schema": "https://docs.renovatebot.com/renovate-schema.json",
-  "extends": [
-    "config:recommended"
-  ],
+  "extends": ["config:recommended"],
   "dependencyDashboard": true,
   "dependencyDashboardTitle": "📦 Renovate Dependency Dashboard",
-  "dependencyDashboardLabels": [
-    "dependencies"
-  ],
-  "assignees": [
-    "the78mole"
-  ],
-  "reviewers": [
-    "the78mole"
-  ],
-  "schedule": [
-    "before 6am on monday"
-  ],
+  "dependencyDashboardLabels": ["dependencies"],
+  "assignees": ["the78mole"],
+  "reviewers": ["the78mole"],
+  "schedule": ["before 6am on monday"],
   "timezone": "Europe/Berlin",
-  "labels": [
-    "dependencies"
-  ],
+  "labels": ["dependencies"],
   "packageRules": [
     {
-      "matchManagers": [
-        "github-actions"
-      ],
-      "addLabels": [
-        "github-actions"
-      ]
+      "matchManagers": ["github-actions"],
+      "addLabels": ["github-actions"]
     },
     {
-      "matchManagers": [
-        "npm"
-      ],
-      "addLabels": [
-        "npm"
-      ]
+      "matchManagers": ["npm"],
+      "addLabels": ["npm"]
     },
     {
-      "matchDatasources": [
-        "docker"
-      ],
-      "addLabels": [
-        "docker"
-      ]
+      "matchDatasources": ["docker"],
+      "addLabels": ["docker"]
     }
   ],
   "prConcurrentLimit": 5,
@@ -53,19 +29,11 @@
   "rebaseWhen": "conflicted",
   "lockFileMaintenance": {
     "enabled": true,
-    "schedule": [
-      "before 6am on monday"
-    ]
+    "schedule": ["before 6am on monday"]
   },
   "vulnerabilityAlerts": {
-    "labels": [
-      "security"
-    ],
-    "assignees": [
-      "the78mole"
-    ],
-    "reviewers": [
-      "the78mole"
-    ]
+    "labels": ["security"],
+    "assignees": ["the78mole"],
+    "reviewers": ["the78mole"]
   }
 }
