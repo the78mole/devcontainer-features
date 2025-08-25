@@ -120,6 +120,7 @@ jobs:
           cd .tmp-test
           devcontainer up --workspace-folder .
           devcontainer exec --workspace-folder . psql --version
-          devcontainer exec --workspace-folder . bash -c "ls /usr/lib/postgresql/*/bin/postgres"
+          devcontainer exec --workspace-folder . which postgres
+          devcontainer exec --workspace-folder . bash -c "ls -la /usr/local/bin/psql"
           cd ..
           rm -rf .tmp-test
