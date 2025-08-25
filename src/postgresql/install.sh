@@ -54,37 +54,61 @@ check_packages() {
     fi
 }
 
+# Create symlinks for PostgreSQL binaries to make them available in PATH
+create_pg_symlinks() {
+    local version_major=$1
+    local pg_bin_dir="/usr/lib/postgresql/${version_major}/bin"
+
+    if [ -d "${pg_bin_dir}" ]; then
+        echo "Creating symlinks for PostgreSQL ${version_major} binaries..."
+
+        # Create symlinks for all PostgreSQL binaries
+        for binary in "${pg_bin_dir}"/*; do
+            if [ -f "${binary}" ] && [ -x "${binary}" ]; then
+                binary_name=$(basename "${binary}")
+                # Create symlink in /usr/local/bin (which is typically in PATH)
+                ln -sf "${binary}" "/usr/local/bin/${binary_name}"
+                echo "  Created symlink: /usr/local/bin/${binary_name} -> ${binary}"
+            fi
+        done
+    else
+        echo "Warning: PostgreSQL binary directory ${pg_bin_dir} not found"
+    fi
+}
+
 setup_pq() {
-    tee /usr/local/share/pq-init.sh << 'EOF'
+    local version_major=$1
+
+    tee /usr/local/share/pq-init.sh << EOF
 #!/bin/sh
 set -e
 
-version_major=$(psql --version | sed -z "s/psql (PostgreSQL) //g" | grep -Eo -m 1 "^([0-9]+)" | sed -z "s/-//g")
+version_major=\$(psql --version | sed -z "s/psql (PostgreSQL) //g" | grep -Eo -m 1 "^([0-9]+)" | sed -z "s/-//g")
 
-echo "listen_addresses = '*'" >> /etc/postgresql/${version_major}/main/postgresql.conf \
-    && echo "data_directory = '$PGDATA'" >> /etc/postgresql/${version_major}/main/postgresql.conf \
-    && echo "host   all all 0.0.0.0/0        trust" > /etc/postgresql/${version_major}/main/pg_hba.conf \
-    && echo "host   all all ::/0             trust" >> /etc/postgresql/${version_major}/main/pg_hba.conf \
-    && echo "host   all all ::1/128          trust" >> /etc/postgresql/${version_major}/main/pg_hba.conf
+echo "listen_addresses = '*'" >> /etc/postgresql/\${version_major}/main/postgresql.conf \\
+    && echo "data_directory = '\$PGDATA'" >> /etc/postgresql/\${version_major}/main/postgresql.conf \\
+    && echo "host   all all 0.0.0.0/0        trust" > /etc/postgresql/\${version_major}/main/pg_hba.conf \\
+    && echo "host   all all ::/0             trust" >> /etc/postgresql/\${version_major}/main/pg_hba.conf \\
+    && echo "host   all all ::1/128          trust" >> /etc/postgresql/\${version_major}/main/pg_hba.conf
 
-if [ ! -f "$PGDATA/PG_VERSION" ]; then
+if [ ! -f "\$PGDATA/PG_VERSION" ]; then
     echo "Initializing PostgreSQL database..."
-    chown -R postgres:postgres $PGDATA \
-        && chmod 0750 $PGDATA \
-        && sudo -H -u postgres sh -c "/usr/lib/postgresql/${version_major}/bin/initdb -D $PGDATA --auth-local trust --auth-host scram-sha-256"
+    chown -R postgres:postgres \$PGDATA \\
+        && chmod 0750 \$PGDATA \\
+        && sudo -H -u postgres sh -c "/usr/lib/postgresql/\${version_major}/bin/initdb -D \$PGDATA --auth-local trust --auth-host scram-sha-256"
 else
     echo "PostgreSQL database already initialized, skipping initialization"
 fi
 
 echo "Starting PostgreSQL..."
-sudo /etc/init.d/postgresql start \
+sudo /etc/init.d/postgresql start \\
     && pg_isready -t 60
 
 set +e
 
 # Execute whatever commands were passed in (if any). This allows us
 # to set this script to ENTRYPOINT while still executing the default CMD.
-exec "$@"
+exec "\$@"
 EOF
     chmod +x /usr/local/share/pq-init.sh \
         && chown "${USERNAME}":root /usr/local/share/pq-init.sh
@@ -120,7 +144,9 @@ install_using_apt() {
     fi
 
     (apt-get install -yq postgresql"${version_major}""${version_suffix}" postgresql-client"${version_major}" \
-        && setup_pq) || return 1
+        && installed_version=$(dpkg -l | grep "^ii  postgresql-[0-9]" | awk '{print $2}' | sed 's/postgresql-//' | head -n1) \
+        && create_pg_symlinks "${installed_version}" \
+        && setup_pq "${installed_version}") || return 1
 }
 
 export DEBIAN_FRONTEND=noninteractive
