@@ -1,0 +1,63 @@
+repos:
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v4.4.0
+    hooks:
+      - id: trailing-whitespace
+      - id: end-of-file-fixer
+      - id: check-yaml
+      - id: check-json
+      - id: check-added-large-files
+      - id: check-case-conflict
+      - id: check-merge-conflict
+      - id: check-executables-have-shebangs
+      - id: check-shebang-scripts-are-executable
+
+  - repo: https://github.com/shellcheck-py/shellcheck-py
+    rev: v0.9.0.5
+    hooks:
+      - id: shellcheck
+        args: [-x]
+        exclude: ^test/.*\.sh$
+
+  - repo: https://github.com/koalaman/shellcheck-precommit
+    rev: v0.9.0
+    hooks:
+      - id: shellcheck
+        files: ^test/.*\.sh$
+        args: [-x, -e, SC1091]
+
+  - repo: https://github.com/igorshubovych/markdownlint-cli
+    rev: v0.37.0
+    hooks:
+      - id: markdownlint
+        args: [--fix]
+
+  - repo: https://github.com/pre-commit/mirrors-prettier
+    rev: v3.0.3
+    hooks:
+      - id: prettier
+        types_or: [json, yaml, markdown]
+        args: [--write]
+
+  - repo: local
+    hooks:
+      - id: validate-devcontainer-features
+        name: Validate devcontainer feature configurations
+        entry: bash -c 'for file in src/*/devcontainer-feature.json; do echo "Validating $file"; python3 -m json.tool "$file" > /dev/null || exit 1; done'
+        language: system
+        files: 'src/.*/devcontainer-feature\.json$'
+        pass_filenames: false
+
+      - id: check-feature-install-scripts
+        name: Check feature install scripts are executable
+        entry: bash -c 'for script in src/*/install.sh; do if [ -f "$script" ] && [ ! -x "$script" ]; then echo "Install script $script is not executable"; exit 1; fi; done'
+        language: system
+        files: 'src/.*/install\.sh$'
+        pass_filenames: false
+
+      - id: check-test-scripts
+        name: Check test scripts are executable
+        entry: bash -c 'for script in test/*/test.sh; do if [ -f "$script" ] && [ ! -x "$script" ]; then echo "Test script $script is not executable"; exit 1; fi; done'
+        language: system
+        files: 'test/.*/test\.sh$'
+        pass_filenames: false
