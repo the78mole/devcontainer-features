@@ -1,0 +1,25 @@
+{
+  "id": "postgresql",
+  "version": "1.0.0",
+  "name": "PostgreSQL",
+  "description": "Installs PostgreSQL database server and client tools",
+  "documentationURL": "https://github.com/the78mole/devcontainer-features/tree/main/src/postgresql",
+  "licenseURL": "https://github.com/the78mole/devcontainer-features/blob/main/LICENSE",
+  "options": {
+    "version": {
+      "type": "string",
+      "proposals": ["latest", "17", "16", "15", "14", "13", "12", "11"],
+      "default": "latest",
+      "description": "Select the version of PostgreSQL to install"
+    }
+  },
+  "customizations": {
+    "vscode": {
+      "extensions": ["ms-ossdata.vscode-postgresql"]
+    }
+  },
+  "containerEnv": {
+    "PGDATA": "/var/lib/postgresql/data"
+  },
+  "installsAfter": ["ghcr.io/devcontainers/features/common-utils"]
+}
