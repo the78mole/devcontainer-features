@@ -15,7 +15,7 @@ jobs:
       changed: ${{ steps.version.outputs.changed }}
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
         with:
           fetch-depth: 0
 
@@ -50,7 +50,7 @@ jobs:
     if: ${{ needs.version.outputs.changed == 'true' }}
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
 
       - name: Set up Python
         uses: actions/setup-python@v4
@@ -83,7 +83,7 @@ jobs:
       contents: write
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
 
       - name: Create tag
         if: ${{ !env.ACT }}
@@ -133,7 +133,7 @@ jobs:
       packages: write
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
         with:
           ref: ${{ needs.version.outputs.version-tag }}
 

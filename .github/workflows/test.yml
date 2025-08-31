@@ -10,7 +10,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
 
       - name: Set up Python
         uses: actions/setup-python@v4
@@ -29,7 +29,7 @@ jobs:
       features: ${{ steps.get-features.outputs.features }}
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
 
       - name: Setup jq
         run: sudo apt-get update && sudo apt-get install -y jq
@@ -52,7 +52,7 @@ jobs:
           - mcr.microsoft.com/devcontainers/base:ubuntu
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
 
       - name: "Install latest devcontainer CLI"
         run: npm install -g @devcontainers/cli
@@ -68,7 +68,7 @@ jobs:
         features: ${{ fromJson(needs.detect-features.outputs.features || '["postgresql"]') }}
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
 
       - name: "Install latest devcontainer CLI"
         run: npm install -g @devcontainers/cli
@@ -81,7 +81,7 @@ jobs:
     needs: pre-commit
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
 
       - name: "Install latest devcontainer CLI"
         run: npm install -g @devcontainers/cli
@@ -100,7 +100,7 @@ jobs:
           - debian:latest
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
 
       - name: "Install latest devcontainer CLI"
         run: npm install -g @devcontainers/cli
