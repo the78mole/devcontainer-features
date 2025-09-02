@@ -2,7 +2,7 @@
 
 PG_VERSION=${VERSION:-"latest"}
 PG_ARCHIVE_ARCHITECTURES="amd64 arm64 i386 ppc64el"
-PG_ARCHIVE_VERSION_CODENAMES="bookworm bullseye buster sid trixie bionic focal jammy kinetic noble"
+PG_ARCHIVE_VERSION_CODENAMES="bookworm bullseye jammy noble sid trixie plucky forky"
 USERNAME="${USERNAME:-"${_REMOTE_USER:-"automatic"}"}"
 
 # Default: Exit on any failure.
@@ -122,7 +122,7 @@ install_using_apt() {
     curl -sS https://www.postgresql.org/media/keys/ACCC4CF8.asc | gpg --dearmor --output /usr/share/keyrings/pgdg-archive-keyring.gpg
 
     # Create the file repository configuration
-    echo "deb [arch=$(dpkg --print-architecture) signed-by=/usr/share/keyrings/pgdg-archive-keyring.gpg] http://apt.postgresql.org/pub/repos/apt/ ${VERSION_CODENAME}-pgdg main" > /etc/apt/sources.list.d/pgdg.list
+    echo "deb [arch=$(dpkg --print-architecture) signed-by=/usr/share/keyrings/pgdg-archive-keyring.gpg] http://apt.postgresql.org/pub/repos/apt ${VERSION_CODENAME}-pgdg main" > /etc/apt/sources.list.d/pgdg.list
 
     # Update package lists
     echo "Updating package lists..."
@@ -133,7 +133,7 @@ install_using_apt() {
         echo "  - PostgreSQL repository temporarily unavailable"
         echo "  - Unsupported distribution version: ${VERSION_CODENAME}"
         echo ""
-        echo "Repository URL: http://apt.postgresql.org/pub/repos/apt/ ${VERSION_CODENAME}-pgdg"
+        echo "Repository URL: http://apt.postgresql.org/pub/repos/apt ${VERSION_CODENAME}-pgdg"
         echo "Please check your network connection and try again."
         return 1
     fi
@@ -174,6 +174,8 @@ if [[ "${PG_ARCHIVE_ARCHITECTURES}" = *"${architecture}"* ]] && [[  "${PG_ARCHIV
     install_using_apt
 else
     echo "Unsupported architecture (${architecture}) or version codename (${VERSION_CODENAME})"
+    echo "Supported distributions: ${PG_ARCHIVE_VERSION_CODENAMES}"
+    echo "Please use a supported base image like ubuntu:jammy or ubuntu:noble"
     exit 1
 fi
 
