@@ -1,6 +1,8 @@
 # devcontainer-features
 
-This is a repository containing devcontainer features, mainly to complement the hwdev-template.
+This repository contains high-quality DevContainer features for modern
+development workflows. These features are designed to work together seamlessly
+and provide a great developer experience out of the box.
 
 ## Features
 
@@ -8,6 +10,8 @@ This repository provides the following devcontainer features:
 
 - [`postgresql`](./src/postgresql/README.md) - PostgreSQL database server and
   client tools with automatic setup
+- [`uv`](./src/uv/README.md) - An extremely fast Python package and project
+  manager written in Rust
 
 ## Usage
 
@@ -19,6 +23,9 @@ To use these features in your devcontainer, add them to your `devcontainer.json`
   "features": {
     "ghcr.io/the78mole/devcontainer-features/postgresql:1": {
       "version": "16"
+    },
+    "ghcr.io/the78mole/devcontainer-features/uv:1": {
+      "version": "latest"
     }
   }
 }
@@ -45,6 +52,37 @@ sudo /usr/local/share/pq-init.sh
 
 # Connect to database
 psql -U postgres
+```
+
+### uv Feature
+
+The uv feature installs uv, an extremely fast Python package and project
+manager written in Rust:
+
+- **Lightning fast:** Significantly faster than pip for dependency resolution
+- **Modern Python packaging:** Full support for pyproject.toml and dependency
+  groups
+- **Drop-in replacement:** Compatible with existing pip and requirements.txt
+  workflows
+- **Project management:** Create and manage Python projects with ease
+
+#### uv Quick Start
+
+After the feature is installed, use uv commands:
+
+```bash
+# Create a new Python project
+uv init my-project
+cd my-project
+
+# Add dependencies
+uv add requests pandas
+
+# Run Python with dependencies
+uv run python script.py
+
+# Install packages (pip-compatible)
+uv pip install flask
 ```
 
 ## Development
@@ -96,7 +134,15 @@ The `with-uv` scenario tests PostgreSQL and uv working together:
 ```
 
 The test script `test/postgresql/with-uv.sh` validates both features work
-together by creating a uv project and testing Python database connectivity.
+together by creating a uv project and testing Python database connectivity:
+
+```bash
+# Example workflow tested in the scenario
+uv init database-project
+cd database-project
+uv add psycopg2-binary
+uv run python -c "import psycopg2; print('Database connectivity ready!')"
+```
 
 Run tests with:
 
