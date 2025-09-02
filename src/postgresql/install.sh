@@ -152,7 +152,7 @@ install_using_apt() {
 export DEBIAN_FRONTEND=noninteractive
 
 # Source /etc/os-release to get OS info
-# shellcheck source=/etc/os-release
+# shellcheck disable=SC1091
 . /etc/os-release
 architecture="$(dpkg --print-architecture)"
 
