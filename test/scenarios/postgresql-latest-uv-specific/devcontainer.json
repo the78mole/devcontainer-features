@@ -1,0 +1,11 @@
+{
+  "image": "ubuntu:latest",
+  "features": {
+    "./src/postgresql": {
+      "version": "latest"
+    },
+    "./src/uv": {
+      "version": "0.8.14"
+    }
+  }
+}

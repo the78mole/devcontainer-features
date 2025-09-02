@@ -1,0 +1,11 @@
+{
+  "image": "mcr.microsoft.com/devcontainers/python:3.12",
+  "features": {
+    "./src/postgresql": {
+      "version": "16"
+    },
+    "./src/uv": {
+      "version": "latest"
+    }
+  }
+}
