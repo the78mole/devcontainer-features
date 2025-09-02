@@ -73,7 +73,7 @@ jobs:
         run: |
           features=$(./.github/scripts/get-features.sh)
           echo "Testing features: $features"
-          devcontainer features test --skip-scenarios .
+          devcontainer features test --skip-scenarios . -i ubuntu:latest
 
   create-release:
     runs-on: ubuntu-latest
