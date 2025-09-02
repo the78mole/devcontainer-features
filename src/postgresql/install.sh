@@ -120,11 +120,23 @@ install_using_apt() {
 
     # Import the repository signing key
     curl -sS https://www.postgresql.org/media/keys/ACCC4CF8.asc | gpg --dearmor --output /usr/share/keyrings/pgdg-archive-keyring.gpg
-     # Create the file repository configuration
-    echo "deb [arch=$(dpkg --print-architecture) signed-by=/usr/share/keyrings/pgdg-archive-keyring.gpg]  http://apt.postgresql.org/pub/repos/apt ${VERSION_CODENAME}-pgdg main" > /etc/apt/sources.list.d/pgdg.list
 
-    # Update lists
-    apt-get update -yq
+    # Create the file repository configuration
+    echo "deb [arch=$(dpkg --print-architecture) signed-by=/usr/share/keyrings/pgdg-archive-keyring.gpg] http://apt.postgresql.org/pub/repos/apt/ ${VERSION_CODENAME}-pgdg main" > /etc/apt/sources.list.d/pgdg.list
+
+    # Update package lists
+    echo "Updating package lists..."
+    if ! apt-get update -yq; then
+        echo "ERROR: Failed to update package lists with PostgreSQL repository."
+        echo "This could be due to:"
+        echo "  - Network connectivity issues"
+        echo "  - PostgreSQL repository temporarily unavailable"
+        echo "  - Unsupported distribution version: ${VERSION_CODENAME}"
+        echo ""
+        echo "Repository URL: http://apt.postgresql.org/pub/repos/apt/ ${VERSION_CODENAME}-pgdg"
+        echo "Please check your network connection and try again."
+        return 1
+    fi
 
     # Soft version matching for CLI
     if [ "${PG_VERSION}" = "latest" ] || [ "${PG_VERSION}" = "lts" ] || [ "${PG_VERSION}" = "stable" ]; then
@@ -136,11 +148,13 @@ install_using_apt() {
         version_suffix="=$(apt-cache show postgresql"${version_major}" | awk -F"Version: " '{print $2}' | grep -E -m 1 "^(${PG_VERSION})(\.|$|\+.*|-.*)")"
 
         if [ -z "${version_suffix}" ] || [ "${version_suffix}" = "=" ]; then
-            echo "Provided PG_VERSION (${PG_VERSION}) was not found in the apt-cache for this package+distribution combo";
+            echo "ERROR: PostgreSQL version ${PG_VERSION} not found in repository."
+            echo "Available versions can be checked with:"
+            echo "  apt-cache policy postgresql"
+            echo "  apt-cache policy postgresql-${version_major#-}"
             return 1
         fi
-        echo "version_major ${version_major}"
-        echo "version_suffix ${version_suffix}"
+        echo "Installing PostgreSQL version: ${version_major#-}${version_suffix}"
     fi
 
     (apt-get install -yq postgresql"${version_major}""${version_suffix}" postgresql-client"${version_major}" \
