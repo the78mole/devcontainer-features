@@ -1,0 +1,13 @@
+{
+  "with-uv": {
+    "image": "mcr.microsoft.com/devcontainers/python:3.12",
+    "features": {
+      "postgresql": {
+        "version": "16"
+      },
+      "uv": {
+        "version": "latest"
+      }
+    }
+  }
+}

@@ -1,0 +1,19 @@
+{
+  "minimal-debian": {
+    "image": "debian:latest",
+    "features": {
+      "uv": {}
+    }
+  },
+  "with-postgresql": {
+    "image": "mcr.microsoft.com/devcontainers/python:3.12",
+    "features": {
+      "postgresql": {
+        "version": "latest"
+      },
+      "uv": {
+        "version": "0.8.14"
+      }
+    }
+  }
+}

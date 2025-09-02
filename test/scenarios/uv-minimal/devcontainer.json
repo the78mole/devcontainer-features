@@ -1,6 +1,0 @@
-{
-  "image": "debian:latest",
-  "features": {
-    "./src/uv": {}
-  }
-}

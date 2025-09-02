@@ -1,0 +1,6 @@
+{
+  "image": "debian:latest",
+  "features": {
+    "ghcr.io/the78mole/devcontainer-features/uv": {}
+  }
+}

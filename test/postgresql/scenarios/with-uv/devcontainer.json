@@ -1,10 +1,10 @@
 {
   "image": "mcr.microsoft.com/devcontainers/python:3.12",
   "features": {
-    "./src/postgresql": {
+    "ghcr.io/the78mole/devcontainer-features/postgresql": {
       "version": "16"
     },
-    "./src/uv": {
+    "ghcr.io/the78mole/devcontainer-features/uv": {
       "version": "latest"
     }
   }
