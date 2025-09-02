@@ -38,6 +38,20 @@ configuration:
 - Data directory set to `/var/lib/postgresql/data`
 - PostgreSQL configured with trust authentication for development
 - Initialization script created at `/usr/local/share/pq-init.sh`
+- Binary symlinks created in `/usr/local/bin` for easy access to PostgreSQL tools
+
+### Binary Access
+
+All PostgreSQL binaries are automatically symlinked to `/usr/local/bin`,
+making them available in your PATH:
+
+```bash
+psql --version          # PostgreSQL client
+postgres --version      # PostgreSQL server
+pg_dump --version       # Database backup tool
+createdb mydb           # Create database utility
+# ... and all other PostgreSQL utilities
+```
 
 ### Starting PostgreSQL
 
@@ -55,13 +69,6 @@ Connect to PostgreSQL using the `psql` client:
 psql -U postgres
 ```
 
-## VS Code Extensions
-
-This feature automatically installs the recommended PostgreSQL extension for
-VS Code:
-
-- `ms-ossdata.vscode-postgresql` - PostgreSQL extension for VS Code
-
 ## Environment Variables
 
 The following environment variable is set:
@@ -71,20 +78,24 @@ The following environment variable is set:
 ## Notes
 
 - PostgreSQL is configured for development use with trust authentication
-- For production use, you should configure proper authentication and security
-  settings
-- The feature creates an initialization script that handles database setup and
-  startup
+- For production use, you should configure proper authentication and security settings
+- The feature creates an initialization script that handles database setup and startup
 - PostgreSQL will be configured to accept connections from any IP address
   (suitable for container development)
+- All PostgreSQL binaries are automatically available in PATH via symlinks
+- Only distributions supported by the official PostgreSQL APT repository are
+  supported
 
 ## OS Support
 
 This feature supports:
 
-- Ubuntu (bionic, focal, jammy, kinetic, noble)
-- Debian (bullseye, bookworm, buster, sid)
-- Architectures: amd64, arm64, i386, ppc64el
+- **Ubuntu**: jammy (22.04), noble (24.04), plucky (25.04)
+- **Debian**: bullseye (11), bookworm (12), sid (unstable), trixie (testing)
+- **Architectures**: amd64, arm64, i386, ppc64el
+
+Note: Support is limited to distributions available in the official PostgreSQL
+APT repository.
 
 ---
 
