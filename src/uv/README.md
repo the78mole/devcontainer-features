@@ -1,22 +1,23 @@
 # uv Feature
 
-This DevContainer feature installs [uv](https://docs.astral.sh/uv/), an extremely fast Python package and project manager written in Rust.
+This DevContainer feature installs [uv](https://docs.astral.sh/uv/), an
+extremely fast Python package and project manager written in Rust.
 
 ## Options
 
-| Option | Type | Default | Description |
-|--------|------|---------|-------------|
+| Option  | Type   | Default  | Description              |
+| ------- | ------ | -------- | ------------------------ |
 | version | string | "latest" | Version of uv to install |
 
 ## Usage
 
 ```json
 {
-    "features": {
-        "ghcr.io/the78mole/devcontainer-features/uv": {
-            "version": "latest"
-        }
+  "features": {
+    "ghcr.io/the78mole/devcontainer-features/uv": {
+      "version": "latest"
     }
+  }
 }
 ```
 

@@ -8,18 +8,10 @@
   "options": {
     "version": {
       "type": "string",
-      "proposals": [
-        "latest",
-        "0.4.18",
-        "0.4.17",
-        "0.4.16",
-        "0.4.15"
-      ],
+      "proposals": ["latest", "0.4.18", "0.4.17", "0.4.16", "0.4.15"],
       "default": "latest",
       "description": "Version of uv to install"
     }
   },
-  "installsAfter": [
-    "ghcr.io/devcontainers/features/python"
-  ]
+  "installsAfter": ["ghcr.io/devcontainers/features/python"]
 }

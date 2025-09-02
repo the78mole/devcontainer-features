@@ -23,9 +23,9 @@ if curl -LsSf https://astral.sh/uv/install.sh | sh 2>/dev/null; then
     installer_success=true
 fi
 
-if [ "$installer_success" = true ] && ([ -f "$HOME/.cargo/bin/uv" ] || [ -f "$HOME/.local/bin/uv" ] || [ -f "/root/.cargo/bin/uv" ] || [ -f "/root/.local/bin/uv" ]); then
+if [ "$installer_success" = true ] && { [ -f "$HOME/.cargo/bin/uv" ] || [ -f "$HOME/.local/bin/uv" ] || [ -f "/root/.cargo/bin/uv" ] || [ -f "/root/.local/bin/uv" ]; }; then
     echo "Successfully installed uv using official installer"
-    
+
     # Find where uv was installed and move it to /usr/local/bin
     if [ -f "$HOME/.cargo/bin/uv" ]; then
         mv "$HOME/.cargo/bin/uv" /usr/local/bin/uv
@@ -38,15 +38,15 @@ if [ "$installer_success" = true ] && ([ -f "$HOME/.cargo/bin/uv" ] || [ -f "$HO
     fi
 else
     echo "Official installer failed, trying alternative installation methods..."
-    
+
     # Try installing through pip if Python is available
     if command -v python3 &> /dev/null || command -v python &> /dev/null; then
         echo "Installing uv via pip..."
         if command -v python3 &> /dev/null; then
             apt-get install -y python3-pip || true
-            python3 -m pip install --break-system-packages uv 2>/dev/null || python3 -m pip install uv 2>/dev/null || {
+            if ! python3 -m pip install --break-system-packages uv 2>/dev/null && ! python3 -m pip install uv 2>/dev/null; then
                 echo "pip installation failed, trying system package..."
-                apt-get update -y && apt-get install -y python3-uv || {
+                if ! apt-get update -y || ! apt-get install -y python3-uv; then
                     echo "Creating mock uv binary for testing purposes..."
                     cat > /usr/local/bin/uv << 'EOF'
 #!/bin/bash
@@ -71,8 +71,8 @@ case "$1" in
 esac
 EOF
                     chmod +x /usr/local/bin/uv
-                }
-            }
+                fi
+            fi
         else
             apt-get install -y python-pip || true
             python -m pip install uv || {
@@ -102,7 +102,7 @@ EOF
                 chmod +x /usr/local/bin/uv
             }
         fi
-        
+
         # Create symlink to /usr/local/bin if needed
         if ! command -v uv &> /dev/null; then
             # Find uv in common pip installation locations
@@ -141,7 +141,7 @@ esac
 EOF
             chmod +x /usr/local/bin/uv
         }
-        
+
         # Create symlink to /usr/local/bin
         if ! command -v uv &> /dev/null; then
             uv_path=$(find /usr/local /home -name "uv" -type f -executable 2>/dev/null | head -1)
@@ -156,7 +156,7 @@ fi
 chmod +x /usr/local/bin/uv
 
 # Add to PATH for all users
-echo 'export PATH="/usr/local/bin:$PATH"' >> /etc/bash.bashrc
+echo "export PATH=\"/usr/local/bin:\$PATH\"" >> /etc/bash.bashrc
 
 # Make sure it's available for the vscode user
 chown root:root /usr/local/bin/uv
