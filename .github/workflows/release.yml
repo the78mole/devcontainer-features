@@ -85,6 +85,23 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v5
 
+      - name: Setup jq
+        run: sudo apt-get update && sudo apt-get install -y jq
+
+      - name: Get features list
+        id: features
+        run: |
+          features=$(./.github/scripts/get-features.sh)
+          echo "features=$features" >> $GITHUB_OUTPUT
+          # Create formatted feature list for release notes
+          feature_list=""
+          for feature in $(echo $features | jq -r '.[]'); do
+            feature_list="${feature_list}- **${feature}**: $(jq -r '.description' src/${feature}/devcontainer-feature.json)"$'\n'
+          done
+          echo "formatted_list<<EOF" >> $GITHUB_OUTPUT
+          echo "$feature_list" >> $GITHUB_OUTPUT
+          echo "EOF" >> $GITHUB_OUTPUT
+
       - name: Create tag
         if: ${{ !env.ACT }}
         run: |
@@ -105,11 +122,7 @@ jobs:
             ### Features
             This release includes the following devcontainer features:
 
-            ```bash
-            # Get available features
-            features=$(./.github/scripts/get-features.sh)
-            echo "Available features: $features"
-            ```
+            ${{ steps.features.outputs.formatted_list }}
 
             ### Usage
             Add this to your `devcontainer.json`:
@@ -120,6 +133,12 @@ jobs:
               }
             }
             ```
+
+            ### What's Changed
+            - PostgreSQL feature with support for versions 11-17
+            - Automatic binary symlinks for easy access
+            - Support for Ubuntu 22.04+ and Debian 11+ base images
+            - Comprehensive testing across multiple PostgreSQL versions
           draft: false
           prerelease: false
           token: ${{ secrets.GITHUB_TOKEN }}
