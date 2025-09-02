@@ -99,6 +99,23 @@ if ! gh auth status &> /dev/null; then
     exit 1
 fi
 
+# Test if we have the necessary permissions by trying to access workflow runs
+echo "🔐 Testing GitHub API permissions..."
+if ! gh api repos/:owner/:repo/actions/runs --paginate=false >/dev/null 2>&1; then
+    echo "❌ Error: Cannot access workflow runs"
+    echo "Please check your GitHub token permissions"
+    exit 1
+fi
+
+# Test if we can delete workflow runs (non-destructive test)
+GITHUB_TOKEN_TYPE=$(gh auth status 2>&1 | grep -o "GITHUB_TOKEN\|OAuth token\|Personal access token" || echo "Unknown")
+if [[ "$GITHUB_TOKEN_TYPE" == "GITHUB_TOKEN" ]]; then
+    echo "⚠️  Warning: Using GITHUB_TOKEN which may have limited permissions in Codespaces"
+    echo "   If deletion fails, consider using a Personal Access Token with 'actions:write' scope"
+    echo "   Run: gh auth login --with-token < your-pat-file"
+    echo
+fi
+
 # Get total number of runs using a higher limit
 echo "📈 Analyzing workflow runs..."
 # Use a very high limit to get all runs, GitHub API typically limits to ~1000 anyway
