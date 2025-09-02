@@ -89,7 +89,7 @@ jobs:
       - name: "Testing global scenarios"
         run: devcontainer features test --global-scenarios-only .
 
-  test-versions:
+  test-postgresql-versions:
     runs-on: ubuntu-latest
     needs: pre-commit
     strategy:
@@ -122,5 +122,78 @@ jobs:
           devcontainer exec --workspace-folder . psql --version
           devcontainer exec --workspace-folder . which postgres
           devcontainer exec --workspace-folder . bash -c "ls -la /usr/local/bin/psql"
+          cd ..
+          rm -rf .tmp-test
+
+  test-uv-versions:
+    runs-on: ubuntu-latest
+    needs: pre-commit
+    strategy:
+      matrix:
+        version: [latest, 0.6.17, 0.7.22, 0.8.12, 0.8.13, 0.8.14]
+        baseImage:
+          - mcr.microsoft.com/devcontainers/python:3.11
+          - mcr.microsoft.com/devcontainers/python:3.12
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v5
+
+      - name: "Install latest devcontainer CLI"
+        run: npm install -g @devcontainers/cli
+
+      - name: "Test uv version ${{ matrix.version }} on ${{ matrix.baseImage }}"
+        run: |
+          mkdir -p .tmp-test/.devcontainer
+          cp -r src .tmp-test/.devcontainer/
+          echo '{
+            "image": "${{ matrix.baseImage }}",
+            "features": {
+              "./src/uv": {
+                "version": "${{ matrix.version }}"
+              }
+            }
+          }' > .tmp-test/.devcontainer/devcontainer.json
+          cd .tmp-test
+          devcontainer up --workspace-folder .
+          devcontainer exec --workspace-folder . uv --version
+          devcontainer exec --workspace-folder . which uv
+          devcontainer exec --workspace-folder . bash -c "ls -la /usr/local/bin/uv"
+          cd ..
+          rm -rf .tmp-test
+
+  test-uv-base-images:
+    runs-on: ubuntu-latest
+    needs: pre-commit
+    strategy:
+      matrix:
+        baseImage:
+          - ubuntu:latest
+          - debian:latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v5
+
+      - name: "Install latest devcontainer CLI"
+        run: npm install -g @devcontainers/cli
+
+      - name: "Test uv on ${{ matrix.baseImage }}"
+        run: |
+          mkdir -p .tmp-test/.devcontainer
+          cp -r src .tmp-test/.devcontainer/
+          echo '{
+            "image": "${{ matrix.baseImage }}",
+            "features": {
+              "./src/uv": {
+                "version": "latest"
+              }
+            }
+          }' > .tmp-test/.devcontainer/devcontainer.json
+          cd .tmp-test
+          devcontainer up --workspace-folder .
+          devcontainer exec --workspace-folder . uv --version
+          devcontainer exec --workspace-folder . which uv
+          devcontainer exec --workspace-folder . bash -c "ls -la /usr/local/bin/uv"
+          devcontainer exec --workspace-folder . bash -c "python3 --version || echo 'Python3 not available'"
+          devcontainer exec --workspace-folder . bash -c "uv pip --help"
           cd ..
           rm -rf .tmp-test

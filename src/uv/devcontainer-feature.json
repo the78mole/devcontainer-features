@@ -1,0 +1,17 @@
+{
+  "id": "uv",
+  "version": "1.0.0",
+  "name": "uv (Python Package Manager)",
+  "description": "Installs uv, an extremely fast Python package and project manager written in Rust",
+  "documentationURL": "https://github.com/the78mole/devcontainer-features/tree/main/src/uv",
+  "licenseURL": "https://github.com/the78mole/devcontainer-features/blob/main/LICENSE",
+  "options": {
+    "version": {
+      "type": "string",
+      "proposals": ["latest", "0.4.18", "0.4.17", "0.4.16", "0.4.15"],
+      "default": "latest",
+      "description": "Version of uv to install"
+    }
+  },
+  "installsAfter": ["ghcr.io/devcontainers/features/python"]
+}
