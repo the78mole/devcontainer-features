@@ -16,11 +16,11 @@ check "uv pip functionality" bash -c "uv pip --help"
 
 # Test that both tools can work together
 check "PostgreSQL service status" bash -c "pg_isready || echo 'PostgreSQL not running (expected in test)'"
-check "uv can create virtual environment" bash -c "cd /tmp && uv venv test-env && ls -la test-env"
 
-# Test Python database connectivity setup
-check "Install psycopg2 with uv" bash -c "cd /tmp && uv pip install psycopg2-binary"
-check "Python can import psycopg2" bash -c "python3 -c 'import psycopg2; print(\"psycopg2 imported successfully\")'"
+# Test Python database connectivity setup with uv project
+check "Initialize uv project" bash -c "cd /tmp && uv init test-project"
+check "Add psycopg2 dependency" bash -c "cd /tmp/test-project && uv add psycopg2-binary"
+check "Python can import psycopg2" bash -c "cd /tmp/test-project && uv run python -c 'import psycopg2; print(\"psycopg2 imported successfully\")'"
 
 # Report result
 reportResults

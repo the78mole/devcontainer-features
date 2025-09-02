@@ -72,8 +72,44 @@ pre-commit install
 Tests are located in the `test/` directory. Each feature should have its own
 test directory with:
 
-- `devcontainer.json` - Test environment configuration
-- `test.sh` - Test script to verify the feature works correctly
+- `devcontainer.json` - Basic test environment configuration
+- `test.sh` - Basic test script to verify the feature works correctly
+- `scenarios.json` - Defines additional test scenarios for feature combinations
+- `<scenario-name>.sh` - Test scripts for specific scenarios (e.g., `with-uv.sh`)
+- `scenarios/<scenario-name>/devcontainer.json` - Container configuration for scenarios
+
+#### Example: PostgreSQL + uv Integration Test
+
+The `with-uv` scenario tests PostgreSQL and uv working together:
+
+```json
+// test/postgresql/scenarios.json
+{
+  "with-uv": {
+    "image": "mcr.microsoft.com/devcontainers/python:3.12",
+    "features": {
+      "postgresql": { "version": "16" },
+      "uv": { "version": "latest" }
+    }
+  }
+}
+```
+
+The test script `test/postgresql/with-uv.sh` validates both features work
+together by creating a uv project and testing Python database connectivity.
+
+Run tests with:
+
+```bash
+# Test all features
+devcontainer features test .
+
+# Test specific feature
+devcontainer features test -f postgresql
+
+# Test specific scenario
+devcontainer features test -f postgresql --filter with-uv
+```
 
 ### Code Quality
 
@@ -102,8 +138,13 @@ pre-commit run --all-files
 │       └── README.md
 ├── test/
 │   └── <feature-name>/
-│       ├── devcontainer.json
-│       └── test.sh
+│       ├── devcontainer.json          # Basic test configuration
+│       ├── test.sh                    # Basic feature tests
+│       ├── scenarios.json             # Scenario definitions
+│       ├── <scenario-name>.sh         # Scenario test scripts
+│       └── scenarios/
+│           └── <scenario-name>/
+│               └── devcontainer.json  # Scenario container config
 └── devcontainer-features.json
 ```
 
