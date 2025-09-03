@@ -88,9 +88,8 @@ setup_pq() {
     # Set up sudoers rule for PostgreSQL operations
     if [ "${USERNAME}" != "root" ]; then
         echo "Setting up sudo permissions for PostgreSQL operations..."
-        echo "${USERNAME} ALL=(postgres) NOPASSWD: /usr/lib/postgresql/*/bin/initdb, /usr/lib/postgresql/*/bin/postgres, /usr/lib/postgresql/*/bin/pg_ctl, /usr/lib/postgresql/*/bin/psql" > /etc/sudoers.d/postgresql-devcontainer
-        echo "${USERNAME} ALL=(root) NOPASSWD: /etc/init.d/postgresql, /bin/mkdir, /bin/chown, /bin/chmod" >> /etc/sudoers.d/postgresql-devcontainer
-        echo "${USERNAME} ALL=(root) NOPASSWD: /usr/bin/tee /etc/postgresql/*/main/postgresql.conf, /usr/bin/tee /etc/postgresql/*/main/pg_hba.conf" >> /etc/sudoers.d/postgresql-devcontainer
+        echo "${USERNAME} ALL=(postgres) NOPASSWD: ALL" > /etc/sudoers.d/postgresql-devcontainer
+        echo "${USERNAME} ALL=(root) NOPASSWD: /etc/init.d/postgresql, /bin/mkdir, /bin/chown, /bin/chmod, /bin/cp, /usr/bin/tee" >> /etc/sudoers.d/postgresql-devcontainer
         chmod 0440 /etc/sudoers.d/postgresql-devcontainer
     fi
 
