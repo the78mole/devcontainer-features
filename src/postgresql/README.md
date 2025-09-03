@@ -37,8 +37,10 @@ configuration:
 - PostgreSQL server configured to listen on all addresses
 - Data directory set to `/var/lib/postgresql/data`
 - PostgreSQL configured with trust authentication for development
+- **Automatic startup** when devcontainer is created
 - Initialization script created at `/usr/local/share/pq-init.sh`
 - Binary symlinks created in `/usr/local/bin` for easy access to PostgreSQL tools
+- Devcontainer user added to `postgres` group with necessary sudo permissions
 
 ### Binary Access
 
@@ -55,11 +57,19 @@ createdb mydb           # Create database utility
 
 ### Starting PostgreSQL
 
-After installation, you can start PostgreSQL with:
+PostgreSQL starts automatically when the devcontainer is created. If you need to restart it manually, you can use:
 
 ```bash
-sudo /usr/local/share/pq-init.sh
+/usr/local/share/pq-init.sh
 ```
+
+### User Permissions
+
+The devcontainer user is automatically added to the `postgres` group and has the necessary sudo permissions to manage PostgreSQL without requiring a password. This allows you to:
+
+- Start and stop PostgreSQL services
+- Initialize databases
+- Run PostgreSQL administration commands
 
 ### Connecting to PostgreSQL
 

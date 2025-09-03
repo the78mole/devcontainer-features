@@ -21,5 +21,6 @@
   "containerEnv": {
     "PGDATA": "/var/lib/postgresql/data"
   },
+  "postCreateCommand": "/usr/local/share/pq-init.sh",
   "installsAfter": ["ghcr.io/devcontainers/features/common-utils"]
 }

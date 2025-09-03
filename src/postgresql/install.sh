@@ -79,6 +79,20 @@ create_pg_symlinks() {
 setup_pq() {
     local version_major=$1
 
+    # Add user to postgres group for administrative access
+    if [ "${USERNAME}" != "root" ]; then
+        echo "Adding user ${USERNAME} to postgres group..."
+        usermod -a -G postgres "${USERNAME}"
+    fi
+
+    # Set up sudoers rule for PostgreSQL operations
+    if [ "${USERNAME}" != "root" ]; then
+        echo "Setting up sudo permissions for PostgreSQL operations..."
+        echo "${USERNAME} ALL=(postgres) NOPASSWD: /usr/lib/postgresql/*/bin/initdb, /usr/lib/postgresql/*/bin/postgres, /usr/lib/postgresql/*/bin/pg_ctl" > /etc/sudoers.d/postgresql-devcontainer
+        echo "${USERNAME} ALL=(root) NOPASSWD: /etc/init.d/postgresql" >> /etc/sudoers.d/postgresql-devcontainer
+        chmod 0440 /etc/sudoers.d/postgresql-devcontainer
+    fi
+
     tee /usr/local/share/pq-init.sh << EOF
 #!/bin/sh
 set -e
