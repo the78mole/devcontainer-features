@@ -97,6 +97,9 @@ setup_pq() {
 #!/bin/sh
 set -e
 
+# Set default PGDATA if not already set
+export PGDATA=\${PGDATA:-/var/lib/postgresql/data}
+
 version_major=\$(psql --version | sed -z "s/psql (PostgreSQL) //g" | grep -Eo -m 1 "^([0-9]+)" | sed -z "s/-//g")
 
 # Configure PostgreSQL settings with proper permissions
@@ -111,17 +114,22 @@ echo "host   all all ::1/128          trust" | sudo tee -a /etc/postgresql/\${ve
 
 # Ensure PGDATA directory exists and has correct permissions
 if [ ! -d "\$PGDATA" ]; then
-    echo "Creating PostgreSQL data directory..."
+    echo "Creating PostgreSQL data directory: \$PGDATA"
     sudo mkdir -p "\$PGDATA"
-    sudo chown -R postgres:postgres "\$PGDATA"
-    sudo chmod 0750 "\$PGDATA"
+    if [ -n "\$PGDATA" ]; then
+        sudo chown -R postgres:postgres "\$PGDATA"
+        sudo chmod 0750 "\$PGDATA"
+    else
+        echo "ERROR: PGDATA is not set or empty"
+        exit 1
+    fi
 fi
 
 if [ ! -f "\$PGDATA/PG_VERSION" ]; then
-    echo "Initializing PostgreSQL database..."
+    echo "Initializing PostgreSQL database in \$PGDATA..."
     sudo -H -u postgres sh -c "/usr/lib/postgresql/\${version_major}/bin/initdb -D \$PGDATA --auth-local trust --auth-host trust"
 else
-    echo "PostgreSQL database already initialized, skipping initialization"
+    echo "PostgreSQL database already initialized at \$PGDATA, skipping initialization"
 fi
 
 # Copy authentication configuration to data directory if it exists
@@ -133,7 +141,14 @@ if [ -d "\$PGDATA" ]; then
 fi
 
 echo "Starting PostgreSQL..."
-sudo /etc/init.d/postgresql start
+if ! sudo /etc/init.d/postgresql status > /dev/null 2>&1; then
+    sudo /etc/init.d/postgresql start
+else
+    echo "PostgreSQL is already running"
+fi
+
+# Wait for PostgreSQL to be ready
+echo "Waiting for PostgreSQL to be ready..."
 pg_isready -t 60
 
 # Reload PostgreSQL configuration to pick up authentication changes
@@ -224,6 +239,20 @@ fi
 
 # Clean up
 rm -rf /var/lib/apt/lists/*
+
+# Set up environment variables for PostgreSQL
+echo 'export PGDATA=/var/lib/postgresql/data' >> /etc/environment
+echo 'export PGDATA=/var/lib/postgresql/data' >> /etc/bash.bashrc
+
+# Create .bashrc entries for common shells
+if [ "${USERNAME}" != "root" ]; then
+    USER_HOME=$(eval echo "~${USERNAME}")
+    if [ -d "${USER_HOME}" ]; then
+        echo 'export PGDATA=/var/lib/postgresql/data' >> "${USER_HOME}/.bashrc"
+        echo 'export PGDATA=/var/lib/postgresql/data' >> "${USER_HOME}/.profile"
+        chown "${USERNAME}":"${USERNAME}" "${USER_HOME}/.bashrc" "${USER_HOME}/.profile" 2>/dev/null || true
+    fi
+fi
 
 echo "PostgreSQL installation completed successfully!"
 echo "You can start PostgreSQL with: sudo /usr/local/share/pq-init.sh"
