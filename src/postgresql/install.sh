@@ -88,8 +88,9 @@ setup_pq() {
     # Set up sudoers rule for PostgreSQL operations
     if [ "${USERNAME}" != "root" ]; then
         echo "Setting up sudo permissions for PostgreSQL operations..."
-        echo "${USERNAME} ALL=(postgres) NOPASSWD: /usr/lib/postgresql/*/bin/initdb, /usr/lib/postgresql/*/bin/postgres, /usr/lib/postgresql/*/bin/pg_ctl" > /etc/sudoers.d/postgresql-devcontainer
-        echo "${USERNAME} ALL=(root) NOPASSWD: /etc/init.d/postgresql" >> /etc/sudoers.d/postgresql-devcontainer
+        echo "${USERNAME} ALL=(postgres) NOPASSWD: /usr/lib/postgresql/*/bin/initdb, /usr/lib/postgresql/*/bin/postgres, /usr/lib/postgresql/*/bin/pg_ctl, /usr/lib/postgresql/*/bin/psql" > /etc/sudoers.d/postgresql-devcontainer
+        echo "${USERNAME} ALL=(root) NOPASSWD: /etc/init.d/postgresql, /bin/mkdir, /bin/chown, /bin/chmod" >> /etc/sudoers.d/postgresql-devcontainer
+        echo "${USERNAME} ALL=(root) NOPASSWD: /usr/bin/tee /etc/postgresql/*/main/postgresql.conf, /usr/bin/tee /etc/postgresql/*/main/pg_hba.conf" >> /etc/sudoers.d/postgresql-devcontainer
         chmod 0440 /etc/sudoers.d/postgresql-devcontainer
     fi
 
@@ -99,21 +100,27 @@ set -e
 
 version_major=\$(psql --version | sed -z "s/psql (PostgreSQL) //g" | grep -Eo -m 1 "^([0-9]+)" | sed -z "s/-//g")
 
-# Configure PostgreSQL settings
-echo "listen_addresses = '*'" >> /etc/postgresql/\${version_major}/main/postgresql.conf \\
-    && echo "data_directory = '\$PGDATA'" >> /etc/postgresql/\${version_major}/main/postgresql.conf
+# Configure PostgreSQL settings with proper permissions
+echo "listen_addresses = '*'" | sudo tee -a /etc/postgresql/\${version_major}/main/postgresql.conf > /dev/null
+echo "data_directory = '\$PGDATA'" | sudo tee -a /etc/postgresql/\${version_major}/main/postgresql.conf > /dev/null
 
-# Configure authentication for both system and data directory pg_hba.conf files
-echo "local  all all                   trust" > /etc/postgresql/\${version_major}/main/pg_hba.conf \\
-    && echo "host   all all 0.0.0.0/0        trust" >> /etc/postgresql/\${version_major}/main/pg_hba.conf \\
-    && echo "host   all all ::/0             trust" >> /etc/postgresql/\${version_major}/main/pg_hba.conf \\
-    && echo "host   all all ::1/128          trust" >> /etc/postgresql/\${version_major}/main/pg_hba.conf
+# Configure authentication for local connections
+echo "local  all all                   trust" | sudo tee /etc/postgresql/\${version_major}/main/pg_hba.conf > /dev/null
+echo "host   all all 0.0.0.0/0        trust" | sudo tee -a /etc/postgresql/\${version_major}/main/pg_hba.conf > /dev/null
+echo "host   all all ::/0             trust" | sudo tee -a /etc/postgresql/\${version_major}/main/pg_hba.conf > /dev/null
+echo "host   all all ::1/128          trust" | sudo tee -a /etc/postgresql/\${version_major}/main/pg_hba.conf > /dev/null
+
+# Ensure PGDATA directory exists and has correct permissions
+if [ ! -d "\$PGDATA" ]; then
+    echo "Creating PostgreSQL data directory..."
+    sudo mkdir -p "\$PGDATA"
+    sudo chown -R postgres:postgres "\$PGDATA"
+    sudo chmod 0750 "\$PGDATA"
+fi
 
 if [ ! -f "\$PGDATA/PG_VERSION" ]; then
     echo "Initializing PostgreSQL database..."
-    chown -R postgres:postgres \$PGDATA \\
-        && chmod 0750 \$PGDATA \\
-        && sudo -H -u postgres sh -c "/usr/lib/postgresql/\${version_major}/bin/initdb -D \$PGDATA --auth-local trust --auth-host trust"
+    sudo -H -u postgres sh -c "/usr/lib/postgresql/\${version_major}/bin/initdb -D \$PGDATA --auth-local trust --auth-host trust"
 else
     echo "PostgreSQL database already initialized, skipping initialization"
 fi
@@ -121,14 +128,14 @@ fi
 # Copy authentication configuration to data directory if it exists
 if [ -d "\$PGDATA" ]; then
     echo "Copying authentication configuration to data directory..."
-    cp /etc/postgresql/\${version_major}/main/pg_hba.conf \$PGDATA/pg_hba.conf \\
-        && chown postgres:postgres \$PGDATA/pg_hba.conf \\
-        && chmod 0600 \$PGDATA/pg_hba.conf
+    sudo cp /etc/postgresql/\${version_major}/main/pg_hba.conf \$PGDATA/pg_hba.conf
+    sudo chown postgres:postgres \$PGDATA/pg_hba.conf
+    sudo chmod 0600 \$PGDATA/pg_hba.conf
 fi
 
 echo "Starting PostgreSQL..."
-sudo /etc/init.d/postgresql start \\
-    && pg_isready -t 60
+sudo /etc/init.d/postgresql start
+pg_isready -t 60
 
 # Reload PostgreSQL configuration to pick up authentication changes
 echo "Reloading PostgreSQL configuration..."
