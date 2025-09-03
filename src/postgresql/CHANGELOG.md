@@ -6,7 +6,8 @@
 
 - **Automatic PostgreSQL startup** when devcontainer is created via `postCreateCommand`
 - **Enhanced user permissions** - devcontainer user added to postgres group
-- **Passwordless sudo access** for PostgreSQL operations (initdb, pg_ctl, service management)
+- **Passwordless sudo access** for PostgreSQL operations (initdb, pg_ctl,
+  service management)
 - **Seamless administration** without requiring manual sudo for basic operations
 
 ### Changed
@@ -22,7 +23,7 @@
 
 ## [1.0.0] - 2025-08-25
 
-### Added
+### Initial Features
 
 - Initial release of PostgreSQL devcontainer feature
 - Support for PostgreSQL versions 11-17 and latest

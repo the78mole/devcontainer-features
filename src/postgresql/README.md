@@ -57,7 +57,8 @@ createdb mydb           # Create database utility
 
 ### Starting PostgreSQL
 
-PostgreSQL starts automatically when the devcontainer is created. If you need to restart it manually, you can use:
+PostgreSQL starts automatically when the devcontainer is created. If you need to
+restart it manually, you can use:
 
 ```bash
 /usr/local/share/pq-init.sh
@@ -65,7 +66,9 @@ PostgreSQL starts automatically when the devcontainer is created. If you need to
 
 ### User Permissions
 
-The devcontainer user is automatically added to the `postgres` group and has the necessary sudo permissions to manage PostgreSQL without requiring a password. This allows you to:
+The devcontainer user is automatically added to the `postgres` group and has the
+necessary sudo permissions to manage PostgreSQL without requiring a password.
+This allows you to:
 
 - Start and stop PostgreSQL services
 - Initialize databases
