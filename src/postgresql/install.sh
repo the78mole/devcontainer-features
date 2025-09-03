@@ -156,10 +156,21 @@ echo "Reloading PostgreSQL configuration..."
 sudo -u postgres psql -c "SELECT pg_reload_conf();" || true
 
 # Create PostgreSQL role for the devcontainer user
-current_user=\$(whoami)
-if [ "\$current_user" != "postgres" ] && [ "\$current_user" != "root" ]; then
-    echo "Creating PostgreSQL role for user: \$current_user"
-    sudo -u postgres psql -c "CREATE ROLE \$current_user WITH LOGIN SUPERUSER;" || echo "Role \$current_user may already exist or creation failed - continuing..."
+# First get the devcontainer user (non-root user with UID >= 1000)
+devcontainer_user=\$(getent passwd | awk -F: '\$3 >= 1000 && \$3 < 65534 { print \$1; exit }')
+if [ -z "\$devcontainer_user" ]; then
+    # Fallback to common devcontainer usernames
+    for user in vscode node codespace; do
+        if id "\$user" > /dev/null 2>&1; then
+            devcontainer_user="\$user"
+            break
+        fi
+    done
+fi
+
+if [ -n "\$devcontainer_user" ] && [ "\$devcontainer_user" != "postgres" ]; then
+    echo "Creating PostgreSQL role for user: \$devcontainer_user"
+    sudo -u postgres psql -c "CREATE ROLE \$devcontainer_user WITH LOGIN SUPERUSER;" || echo "Role \$devcontainer_user may already exist or creation failed - continuing..."
 fi
 
 set +e

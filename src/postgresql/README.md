@@ -1,6 +1,6 @@
-# PostgreSQL
+# PostgreSQL (postgresql)
 
-Installs PostgreSQL database server and client tools.
+Installs PostgreSQL database server and client tools with automatic initialization.
 
 ## Example Usage
 

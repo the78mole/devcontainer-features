@@ -53,3 +53,10 @@ repos:
         language: system
         files: 'test/.*/test\.sh$'
         pass_filenames: false
+
+      - id: check-feature-version-updates
+        name: Check feature version updates
+        entry: ./scripts/check-feature-version-updates.sh
+        language: system
+        files: '^src/.*/(devcontainer-feature\.json|install\.sh|.*\.md)$'
+        pass_filenames: false

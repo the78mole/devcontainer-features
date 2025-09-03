@@ -1,0 +1,9 @@
+{
+  "image": "mcr.microsoft.com/devcontainers/base:ubuntu-22.04",
+  "features": {
+    "./src/postgresql": {
+      "version": "16"
+    }
+  },
+  "forwardPorts": [5432]
+}
