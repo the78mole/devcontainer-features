@@ -79,30 +79,73 @@ create_pg_symlinks() {
 setup_pq() {
     local version_major=$1
 
+    # Add user to postgres group for administrative access
+    if [ "${USERNAME}" != "root" ]; then
+        echo "Adding user ${USERNAME} to postgres group..."
+        usermod -a -G postgres "${USERNAME}"
+    fi
+
+    # Set up sudoers rule for PostgreSQL operations
+    if [ "${USERNAME}" != "root" ]; then
+        echo "Setting up sudo permissions for PostgreSQL operations..."
+        echo "${USERNAME} ALL=(postgres) NOPASSWD: ALL" > /etc/sudoers.d/postgresql-devcontainer
+        echo "${USERNAME} ALL=(root) NOPASSWD: /etc/init.d/postgresql, /bin/mkdir, /bin/chown, /bin/chmod, /bin/cp, /usr/bin/tee" >> /etc/sudoers.d/postgresql-devcontainer
+        chmod 0440 /etc/sudoers.d/postgresql-devcontainer
+    fi
+
     tee /usr/local/share/pq-init.sh << EOF
 #!/bin/sh
 set -e
 
 version_major=\$(psql --version | sed -z "s/psql (PostgreSQL) //g" | grep -Eo -m 1 "^([0-9]+)" | sed -z "s/-//g")
 
-echo "listen_addresses = '*'" >> /etc/postgresql/\${version_major}/main/postgresql.conf \\
-    && echo "data_directory = '\$PGDATA'" >> /etc/postgresql/\${version_major}/main/postgresql.conf \\
-    && echo "host   all all 0.0.0.0/0        trust" > /etc/postgresql/\${version_major}/main/pg_hba.conf \\
-    && echo "host   all all ::/0             trust" >> /etc/postgresql/\${version_major}/main/pg_hba.conf \\
-    && echo "host   all all ::1/128          trust" >> /etc/postgresql/\${version_major}/main/pg_hba.conf
+# Configure PostgreSQL settings with proper permissions
+echo "listen_addresses = '*'" | sudo tee -a /etc/postgresql/\${version_major}/main/postgresql.conf > /dev/null
+echo "data_directory = '\$PGDATA'" | sudo tee -a /etc/postgresql/\${version_major}/main/postgresql.conf > /dev/null
+
+# Configure authentication for local connections
+echo "local  all all                   trust" | sudo tee /etc/postgresql/\${version_major}/main/pg_hba.conf > /dev/null
+echo "host   all all 0.0.0.0/0        trust" | sudo tee -a /etc/postgresql/\${version_major}/main/pg_hba.conf > /dev/null
+echo "host   all all ::/0             trust" | sudo tee -a /etc/postgresql/\${version_major}/main/pg_hba.conf > /dev/null
+echo "host   all all ::1/128          trust" | sudo tee -a /etc/postgresql/\${version_major}/main/pg_hba.conf > /dev/null
+
+# Ensure PGDATA directory exists and has correct permissions
+if [ ! -d "\$PGDATA" ]; then
+    echo "Creating PostgreSQL data directory..."
+    sudo mkdir -p "\$PGDATA"
+    sudo chown -R postgres:postgres "\$PGDATA"
+    sudo chmod 0750 "\$PGDATA"
+fi
 
 if [ ! -f "\$PGDATA/PG_VERSION" ]; then
     echo "Initializing PostgreSQL database..."
-    chown -R postgres:postgres \$PGDATA \\
-        && chmod 0750 \$PGDATA \\
-        && sudo -H -u postgres sh -c "/usr/lib/postgresql/\${version_major}/bin/initdb -D \$PGDATA --auth-local trust --auth-host scram-sha-256"
+    sudo -H -u postgres sh -c "/usr/lib/postgresql/\${version_major}/bin/initdb -D \$PGDATA --auth-local trust --auth-host trust"
 else
     echo "PostgreSQL database already initialized, skipping initialization"
 fi
 
+# Copy authentication configuration to data directory if it exists
+if [ -d "\$PGDATA" ]; then
+    echo "Copying authentication configuration to data directory..."
+    sudo cp /etc/postgresql/\${version_major}/main/pg_hba.conf \$PGDATA/pg_hba.conf
+    sudo chown postgres:postgres \$PGDATA/pg_hba.conf
+    sudo chmod 0600 \$PGDATA/pg_hba.conf
+fi
+
 echo "Starting PostgreSQL..."
-sudo /etc/init.d/postgresql start \\
-    && pg_isready -t 60
+sudo /etc/init.d/postgresql start
+pg_isready -t 60
+
+# Reload PostgreSQL configuration to pick up authentication changes
+echo "Reloading PostgreSQL configuration..."
+sudo -u postgres psql -c "SELECT pg_reload_conf();" || true
+
+# Create PostgreSQL role for the devcontainer user
+current_user=\$(whoami)
+if [ "\$current_user" != "postgres" ] && [ "\$current_user" != "root" ]; then
+    echo "Creating PostgreSQL role for user: \$current_user"
+    sudo -u postgres psql -c "CREATE ROLE \$current_user WITH LOGIN SUPERUSER;" || echo "Role \$current_user may already exist or creation failed - continuing..."
+fi
 
 set +e
 

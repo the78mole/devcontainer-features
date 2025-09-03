@@ -37,20 +37,18 @@ The PostgreSQL feature installs PostgreSQL server and client tools with
 development-friendly configuration:
 
 - **Supported versions:** 11, 12, 13, 14, 15, 16, 17, latest
+- **Automatic startup** when devcontainer is created
 - **Automatic database initialization** with trust authentication
 - **VS Code integration** with PostgreSQL extension
-- **Easy startup** via `/usr/local/share/pq-init.sh`
+- **User permissions** configured for seamless administration
 - **Network access** configured for container development
 
 #### Quick Start
 
-After the feature is installed, start PostgreSQL and connect:
+PostgreSQL starts automatically when the devcontainer is created. Connect directly:
 
 ```bash
-# Start PostgreSQL
-sudo /usr/local/share/pq-init.sh
-
-# Connect to database
+# Connect to database (PostgreSQL is already running)
 psql -U postgres
 ```
 
