@@ -140,6 +140,13 @@ pg_isready -t 60
 echo "Reloading PostgreSQL configuration..."
 sudo -u postgres psql -c "SELECT pg_reload_conf();" || true
 
+# Create PostgreSQL role for the devcontainer user
+current_user=\$(whoami)
+if [ "\$current_user" != "postgres" ] && [ "\$current_user" != "root" ]; then
+    echo "Creating PostgreSQL role for user: \$current_user"
+    sudo -u postgres psql -c "CREATE ROLE \$current_user WITH LOGIN SUPERUSER;" || echo "Role \$current_user may already exist or creation failed - continuing..."
+fi
+
 set +e
 
 # Execute whatever commands were passed in (if any). This allows us
