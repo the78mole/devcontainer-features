@@ -1,8 +1,8 @@
 {
   "id": "jumpstarter-cli",
-  "version": "1.0.10",
+  "version": "1.2.0",
   "name": "Jumpstarter CLI",
-  "description": "Installs Jumpstarter CLI (jmp and j commands) as global tools via uv",
+  "description": "Installs Jumpstarter CLI (jmp and j commands) as global tools via uv, with optional driver packages for exporters",
   "documentationURL": "https://github.com/the78mole/devcontainer-features/tree/main/src/jumpstarter-cli",
   "licenseURL": "https://github.com/the78mole/devcontainer-features/blob/main/LICENSE",
   "installsAfter": ["ghcr.io/devcontainers/features/python"],
@@ -23,6 +23,12 @@
       ],
       "default": "jumpstarter",
       "description": "Package repository: 'jumpstarter' (pkg.jumpstarter.dev), 'pypi', or custom URL (https://...)"
+    },
+    "packages": {
+      "type": "string",
+      "proposals": ["none", "testing", "all"],
+      "default": "none",
+      "description": "Package set to install: 'none' (cli + admin only), 'testing' (+ testing packages), 'all' (all jumpstarter packages)"
     }
   }
 }

@@ -5,10 +5,11 @@ providing the `jmp` and `j` commands as global tools via uv.
 
 ## Options
 
-| Option      | Type   | Default       | Description                           |
-| ----------- | ------ | ------------- | ------------------------------------- |
-| version     | string | "latest"      | Version of jumpstarter-cli to install |
-| packageRepo | string | "jumpstarter" | Package repository to use             |
+| Option             | Type    | Default       | Description                           |
+| ------------------ | ------- | ------------- | ------------------------------------- |
+| version            | string  | "latest"      | Version of jumpstarter-cli to install |
+| packageRepo        | string  | "jumpstarter" | Package repository to use             |
+| installAllPackages | boolean | false         | Install all jumpstarter packages      |
 
 ## Usage
 
@@ -17,7 +18,8 @@ providing the `jmp` and `j` commands as global tools via uv.
   "features": {
     "ghcr.io/the78mole/devcontainer-features/jumpstarter-cli": {
       "version": "latest",
-      "packageRepo": "jumpstarter"
+      "packageRepo": "jumpstarter",
+      "installAllPackages": true
     }
   }
 }
@@ -25,9 +27,27 @@ providing the `jmp` and `j` commands as global tools via uv.
 
 ## What's Installed
 
+### Basic Installation
+
 - `jmp` - Jumpstarter CLI main command
 - `j` - Jumpstarter CLI short alias command
 - Global PATH configuration for all users
+
+### With `installAllPackages: true`
+
+When `installAllPackages` is set to `true`, the feature installs `jumpstarter-all`
+alongside `jumpstarter-cli` using the `--with` flag. This provides access to all
+jumpstarter driver packages and utilities, including:
+
+- **Driver packages**: dutlink, power, storage, network, console, gpio, opendal,
+  and many more
+- **Exporter functionality**: Full exporter capabilities for local and
+  distributed setups
+- **Testing utilities**: Mock implementations for development and testing
+  without hardware
+
+This enables complete jumpstarter functionality including local exporter setup
+as described in the [Jumpstarter Local Mode documentation](https://jumpstarter.dev/release-0.6/getting-started/usage/setup-local-mode.html).
 
 ## Dependencies
 
@@ -88,6 +108,27 @@ j --version
 # Get help
 jmp --help
 j --help
+
+# With installAllPackages: true, you can also:
+# Create local exporter configuration
+mkdir -p ~/.config/jumpstarter/exporters
+cat > ~/.config/jumpstarter/exporters/example-local.yaml << EOF
+apiVersion: jumpstarter.dev/v1alpha1
+kind: ExporterConfig
+metadata:
+  namespace: default
+  name: example-local
+endpoint: ""
+token: ""
+export:
+  storage:
+    type: jumpstarter_driver_opendal.driver.MockStorageMux
+  power:
+    type: jumpstarter_driver_power.driver.MockPower
+EOF
+
+# Test local shell connection
+jmp shell --exporter example-local
 ```
 
 ## Installation Examples
@@ -126,6 +167,20 @@ j --help
     "ghcr.io/the78mole/devcontainer-features/jumpstarter-cli": {
       "version": "latest",
       "packageRepo": "https://pkg.jumpstarter.dev/simple/"
+    }
+  }
+}
+```
+
+### Complete installation with all packages
+
+```json
+{
+  "features": {
+    "ghcr.io/the78mole/devcontainer-features/jumpstarter-cli": {
+      "version": "latest",
+      "packageRepo": "jumpstarter",
+      "installAllPackages": true
     }
   }
 }

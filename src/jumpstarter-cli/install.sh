@@ -4,6 +4,7 @@ set -e
 # Parse input arguments
 VERSION=${VERSION:-"latest"}
 PACKAGE_REPO=${PACKAGEREPO:-"jumpstarter"}
+PACKAGES=${PACKAGES:-"none"}
 
 echo "Installing Jumpstarter CLI..."
 
@@ -188,33 +189,84 @@ esac
 echo "Installing Jumpstarter CLI as global tool..."
 echo "   Repository: $PACKAGE_REPO"
 echo "   Version: $VERSION"
-if [ -n "$EXTRA_INDEX_URL" ]; then
-    echo "   Command: uv tool install --extra-index-url $EXTRA_INDEX_URL $PACKAGE_NAME"
+echo "   Package Level: $PACKAGES"
+
+# Determine package dependencies based on level
+case "$PACKAGES" in
+    "testing")
+        INSTALL_PACKAGES="jumpstarter-driver-power,jumpstarter-driver-opendal"
+        echo "   Including: CLI + admin tools + essential drivers for testing"
+        ;;
+    "all")
+        INSTALL_PACKAGES="jumpstarter-all"
+        echo "   Including: CLI + admin tools + all drivers"
+        ;;
+    "none"|*)
+        INSTALL_PACKAGES=""
+        echo "   Including: CLI + admin tools only"
+        ;;
+esac
+
+# Build install command
+if [ -n "$INSTALL_PACKAGES" ]; then
+    if [ -n "$EXTRA_INDEX_URL" ]; then
+        echo "   Command: uv tool install --extra-index-url $EXTRA_INDEX_URL $PACKAGE_NAME --with $INSTALL_PACKAGES"
+    else
+        echo "   Command: uv tool install $PACKAGE_NAME --with $INSTALL_PACKAGES"
+    fi
 else
-    echo "   Command: uv tool install $PACKAGE_NAME"
+    if [ -n "$EXTRA_INDEX_URL" ]; then
+        echo "   Command: uv tool install --extra-index-url $EXTRA_INDEX_URL $PACKAGE_NAME"
+    else
+        echo "   Command: uv tool install $PACKAGE_NAME"
+    fi
 fi
 
 # Install jumpstarter-cli for the vscode user (or current user)
 if id "vscode" &>/dev/null; then
-    if [ -n "$EXTRA_INDEX_URL" ]; then
-        sudo -u vscode uv tool install --extra-index-url "$EXTRA_INDEX_URL" "$PACKAGE_NAME"
+    if [ -n "$INSTALL_PACKAGES" ]; then
+        if [ -n "$EXTRA_INDEX_URL" ]; then
+            sudo -u vscode uv tool install --extra-index-url "$EXTRA_INDEX_URL" "$PACKAGE_NAME" --with "$INSTALL_PACKAGES"
+        else
+            sudo -u vscode uv tool install "$PACKAGE_NAME" --with "$INSTALL_PACKAGES"
+        fi
     else
-        sudo -u vscode uv tool install "$PACKAGE_NAME"
+        if [ -n "$EXTRA_INDEX_URL" ]; then
+            sudo -u vscode uv tool install --extra-index-url "$EXTRA_INDEX_URL" "$PACKAGE_NAME"
+        else
+            sudo -u vscode uv tool install "$PACKAGE_NAME"
+        fi
     fi
     echo "✅ Jumpstarter CLI installed for vscode user from $PACKAGE_REPO repository"
 elif [ "$USER" != "root" ]; then
-    if [ -n "$EXTRA_INDEX_URL" ]; then
-        uv tool install --extra-index-url "$EXTRA_INDEX_URL" "$PACKAGE_NAME"
+    if [ -n "$INSTALL_PACKAGES" ]; then
+        if [ -n "$EXTRA_INDEX_URL" ]; then
+            uv tool install --extra-index-url "$EXTRA_INDEX_URL" "$PACKAGE_NAME" --with "$INSTALL_PACKAGES"
+        else
+            uv tool install "$PACKAGE_NAME" --with "$INSTALL_PACKAGES"
+        fi
     else
-        uv tool install "$PACKAGE_NAME"
+        if [ -n "$EXTRA_INDEX_URL" ]; then
+            uv tool install --extra-index-url "$EXTRA_INDEX_URL" "$PACKAGE_NAME"
+        else
+            uv tool install "$PACKAGE_NAME"
+        fi
     fi
     echo "✅ Jumpstarter CLI installed for $USER from $PACKAGE_REPO repository"
 else
     # For root user, install globally accessible
-    if [ -n "$EXTRA_INDEX_URL" ]; then
-        uv tool install --extra-index-url "$EXTRA_INDEX_URL" "$PACKAGE_NAME"
+    if [ -n "$INSTALL_PACKAGES" ]; then
+        if [ -n "$EXTRA_INDEX_URL" ]; then
+            uv tool install --extra-index-url "$EXTRA_INDEX_URL" "$PACKAGE_NAME" --with "$INSTALL_PACKAGES"
+        else
+            uv tool install "$PACKAGE_NAME" --with "$INSTALL_PACKAGES"
+        fi
     else
-        uv tool install "$PACKAGE_NAME"
+        if [ -n "$EXTRA_INDEX_URL" ]; then
+            uv tool install --extra-index-url "$EXTRA_INDEX_URL" "$PACKAGE_NAME"
+        else
+            uv tool install "$PACKAGE_NAME"
+        fi
     fi
     # Make sure the tools are available in PATH for all users
     if [ -f "/root/.local/bin/jmp" ]; then
@@ -264,5 +316,13 @@ case "$PACKAGE_REPO" in
         fi
         ;;
 esac
+
+if [ "$INSTALL_ALL_PACKAGES" = "true" ]; then
+    echo ""
+    echo "🔧 Additional Packages Information:"
+    echo "   jumpstarter-all has been installed alongside jumpstarter-cli"
+    echo "   This includes all drivers, exporters, and common utilities"
+    echo "   All packages are accessible through the jumpstarter-cli tool"
+fi
 
 echo "✅ Jumpstarter CLI feature installation complete!"
