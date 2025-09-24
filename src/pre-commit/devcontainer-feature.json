@@ -1,6 +1,6 @@
 {
   "id": "pre-commit",
-  "version": "1.0.7",
+  "version": "1.0.8",
   "name": "pre-commit",
   "description": "Installs pre-commit framework for managing pre-commit hooks using uv",
   "documentationURL": "https://github.com/the78mole/devcontainer-features/tree/main/src/pre-commit",

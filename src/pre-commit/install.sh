@@ -46,49 +46,29 @@ if ! command -v uv &> /dev/null; then
     fi
 
     # Install uv using the official installer
+    echo "Installing uv (Python package manager)..."
     curl -LsSf https://astral.sh/uv/install.sh | sh
-    # Source the environment to make uv available - try multiple locations
-    export PATH="$HOME/.local/bin:$PATH"
-    if ! command -v uv &> /dev/null; then
-        # Try cargo bin location
-        export PATH="$HOME/.cargo/bin:$PATH"
-        if ! command -v uv &> /dev/null; then
-            # Try system-wide location
-            export PATH="/usr/local/bin:$PATH"
-            if ! command -v uv &> /dev/null; then
-                # Try root's local bin
-                export PATH="/root/.local/bin:$PATH"
-                if ! command -v uv &> /dev/null; then
-                    echo "❌ Failed to install uv - please install uv manually first"
-                    echo "Tried paths: \$HOME/.local/bin, \$HOME/.cargo/bin, /usr/local/bin, /root/.local/bin"
-                    exit 1
-                fi
-            fi
-        fi
+
+    # Move uv to global location to avoid permission issues
+    if [ -f "$HOME/.cargo/bin/uv" ]; then
+        mv "$HOME/.cargo/bin/uv" /usr/local/bin/uv 2>/dev/null || cp "$HOME/.cargo/bin/uv" /usr/local/bin/uv
+    elif [ -f "$HOME/.local/bin/uv" ]; then
+        mv "$HOME/.local/bin/uv" /usr/local/bin/uv 2>/dev/null || cp "$HOME/.local/bin/uv" /usr/local/bin/uv
     fi
+
+    # Ensure permissions are correct
+    chmod +x /usr/local/bin/uv
+    chown root:root /usr/local/bin/uv
+
+    # Add to PATH for all users
+    echo "export PATH=\"/usr/local/bin:\$PATH\"" >> /etc/bash.bashrc
     echo "✅ uv installed successfully"
-
-    # Ensure uv binary has execute permissions
-    chmod +x /root/.local/bin/uv 2>/dev/null || true
-    chmod +x "$HOME"/.local/bin/uv 2>/dev/null || true
-
-    # Ensure uv is in PATH immediately after installation
-    export PATH="$HOME/.local/bin:$HOME/.cargo/bin:/usr/local/bin:/root/.local/bin:$PATH"
-
-    # Wait a moment for installation to complete
-    sleep 1
+    uv --version
 fi
 
 # Final verification that uv is available
 if ! command -v uv &> /dev/null; then
     echo "❌ uv command not found in PATH after installation"
-    echo "Current PATH: $PATH"
-    echo "Checking common locations:"
-    ls -la "$HOME"/.local/bin/uv 2>/dev/null && echo "Found in $HOME/.local/bin/" || echo "Not in $HOME/.local/bin/"
-    ls -la "$HOME"/.cargo/bin/uv 2>/dev/null && echo "Found in $HOME/.cargo/bin/" || echo "Not in $HOME/.cargo/bin/"
-    ls -la /usr/local/bin/uv 2>/dev/null && echo "Found in /usr/local/bin/" || echo "Not in /usr/local/bin/"
-    ls -la /root/.local/bin/uv 2>/dev/null && echo "Found in /root/.local/bin/" || echo "Not in /root/.local/bin/"
-    exit 1
 fi
 
 # Install pre-commit using uv
@@ -103,68 +83,26 @@ else
     echo "   Installing pre-commit version $VERSION"
 fi
 
-# Find the correct uv path
-UV_PATH=""
-if [ -f "/root/.local/bin/uv" ]; then
-    UV_PATH="/root/.local/bin/uv"
-elif [ -f "$HOME/.local/bin/uv" ]; then
-    UV_PATH="$HOME/.local/bin/uv"
-elif [ -f "$HOME/.cargo/bin/uv" ]; then
-    UV_PATH="$HOME/.cargo/bin/uv"
-elif [ -f "/usr/local/bin/uv" ]; then
-    UV_PATH="/usr/local/bin/uv"
-else
-    echo "❌ Cannot find uv executable"
-    exit 1
-fi
-
-# Ensure the uv binary is executable
-chmod +x "$UV_PATH"
-
-echo "Using uv at: $UV_PATH"
-
-# Install pre-commit as a uv tool for global access
-echo "Installing pre-commit as global tool..."
-echo "   Command: $UV_PATH tool install $PACKAGE_SOURCE"
-
-# Ensure uv binary is executable before using it
-if [ -f "$UV_PATH" ]; then
-    chmod +x "$UV_PATH" 2>/dev/null || true
-    # Double-check it's executable
-    if [ ! -x "$UV_PATH" ]; then
-        echo "WARNING: $UV_PATH is not executable, trying alternative execution method"
-        # Use python to execute the binary directly
-        python3 -c "
-import subprocess
-import os
-result = subprocess.run(['$UV_PATH', 'tool', 'install', '$PACKAGE_SOURCE'], capture_output=True, text=True)
-print(result.stdout)
-if result.stderr:
-    print('STDERR:', result.stderr)
-exit(result.returncode)
-"
-    else
-        # Normal execution
-        if [ "$_REMOTE_USER" = "vscode" ]; then
-            sudo -u vscode bash -c "export PATH=\"/root/.local/bin:/home/vscode/.local/bin:/usr/local/bin:\$PATH\" && $UV_PATH tool install $PACKAGE_SOURCE"
-        elif [ "$_REMOTE_USER" = "root" ] || [ "$USER" = "root" ]; then
-            bash -c "export PATH=\"$HOME/.local/bin:/root/.local/bin:/usr/local/bin:\$PATH\" && $UV_PATH tool install $PACKAGE_SOURCE"
-        else
-            bash -c "export PATH=\"/root/.local/bin:/usr/local/bin:\$PATH\" && $UV_PATH tool install $PACKAGE_SOURCE"
-        fi
-    fi
-else
-    echo "ERROR: uv binary not found at $UV_PATH"
-    exit 1
-fi
-
 # Install pre-commit for the vscode user (or current user)
 if id "vscode" &>/dev/null; then
-    sudo -u vscode bash -c "export PATH=\"/root/.local/bin:/home/vscode/.local/bin:/usr/local/bin:\$PATH\" && bash $UV_PATH tool install $PACKAGE_SOURCE"
+    sudo -u vscode uv tool install "$PACKAGE_SOURCE"
     echo "✅ pre-commit installed for vscode user"
 elif [ "$USER" != "root" ]; then
-    bash -c "export PATH=\"$HOME/.local/bin:/root/.local/bin:/usr/local/bin:\$PATH\" && bash $UV_PATH tool install $PACKAGE_SOURCE"
+    uv tool install "$PACKAGE_SOURCE"
     echo "✅ pre-commit installed for $USER"
+else
+    # For root user, install globally accessible
+    uv tool install "$PACKAGE_SOURCE"
+    # Make sure the tool is available in PATH for all users
+    if [ -f "/root/.local/bin/pre-commit" ]; then
+        ln -sf /root/.local/bin/pre-commit /usr/local/bin/pre-commit
+    fi
+    echo "✅ pre-commit installed globally"
+fi
+
+# Verify pre-commit installation
+if command -v pre-commit &> /dev/null; then
+    echo "✅ pre-commit available: $(pre-commit --version)"
 else
     # For root user, install globally accessible
     bash -c "export PATH=\"/root/.local/bin:/usr/local/bin:\$PATH\" && bash $UV_PATH tool install $PACKAGE_SOURCE"
