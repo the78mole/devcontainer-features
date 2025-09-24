@@ -3,5 +3,8 @@
   "features": {
     "uv": {},
     "jumpstarter-cli": {}
+  },
+  "containerEnv": {
+    "JUMPSTARTER_HOST": "http://localhost:8080"
   }
 }

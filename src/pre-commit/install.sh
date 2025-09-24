@@ -105,7 +105,7 @@ if command -v pre-commit &> /dev/null; then
     echo "✅ pre-commit available: $(pre-commit --version)"
 else
     # For root user, install globally accessible
-    bash -c "export PATH=\"/root/.local/bin:/usr/local/bin:\$PATH\" && bash $UV_PATH tool install $PACKAGE_SOURCE"
+    bash -c "export PATH=\"/root/.local/bin:/usr/local/bin:\$PATH\" && uv tool install $PACKAGE_SOURCE"
     # Make sure the tool is available in PATH for all users
     if [ -f "/root/.local/bin/pre-commit" ]; then
         ln -sf /root/.local/bin/pre-commit /usr/local/bin/pre-commit

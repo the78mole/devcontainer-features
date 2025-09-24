@@ -26,6 +26,58 @@ if ! command -v python3 &> /dev/null && ! command -v python &> /dev/null; then
     echo "✅ Python installed successfully"
 fi
 
+# Check Python version - jumpstarter-cli requires Python >=3.11
+PYTHON_CMD="python3"
+if ! command -v python3 &> /dev/null; then
+    PYTHON_CMD="python"
+fi
+
+PYTHON_VERSION=$($PYTHON_CMD -c "import sys; print(f'{sys.version_info.major}.{sys.version_info.minor}')")
+PYTHON_MAJOR=$($PYTHON_CMD -c "import sys; print(sys.version_info.major)")
+PYTHON_MINOR=$($PYTHON_CMD -c "import sys; print(sys.version_info.minor)")
+
+echo "📋 Current Python version: $PYTHON_VERSION"
+
+# Check if Python version is sufficient (>=3.11)
+if [ "$PYTHON_MAJOR" -lt 3 ] || [ "$PYTHON_MAJOR" -eq 3 ] && [ "$PYTHON_MINOR" -lt 11 ]; then
+    echo "⚠️  jumpstarter-cli requires Python >=3.11, but found Python $PYTHON_VERSION"
+
+    if command -v apt-get &> /dev/null; then
+        echo "📦 Installing Python 3.11 from deadsnakes PPA..."
+
+        # Set noninteractive frontend and timezone to avoid prompts
+        export DEBIAN_FRONTEND=noninteractive
+        export TZ=Etc/UTC
+
+        # Pre-configure tzdata to avoid timezone prompts
+        echo "tzdata tzdata/Areas select Etc" | debconf-set-selections
+        echo "tzdata tzdata/Zones/Etc select UTC" | debconf-set-selections
+
+        # Install software-properties-common for add-apt-repository
+        apt-get update && apt-get install -y software-properties-common
+
+        # Add deadsnakes PPA for newer Python versions
+        add-apt-repository -y ppa:deadsnakes/ppa
+        apt-get update
+
+        # Install Python 3.11
+        apt-get install -y python3.11 python3.11-venv python3.11-dev
+
+        # Update alternatives to prefer Python 3.11
+        update-alternatives --install /usr/bin/python3 python3 /usr/bin/python3.11 1
+
+        # Update PYTHON_CMD to use the new version
+        PYTHON_CMD="python3.11"
+        PYTHON_VERSION=$($PYTHON_CMD -c "import sys; print(f'{sys.version_info.major}.{sys.version_info.minor}')")
+        echo "✅ Updated Python to version: $PYTHON_VERSION"
+    else
+        echo "❌ Cannot upgrade Python automatically on this system"
+        echo "   jumpstarter-cli requires Python >=3.11"
+        echo "   Please use a base image with Python 3.11+ or manually install Python 3.11+"
+        exit 1
+    fi
+fi
+
 # Check if uv is available
 if ! command -v uv &> /dev/null; then
     echo "📦 uv not found - installing uv first..."
@@ -80,26 +132,31 @@ case "$PACKAGE_REPO" in
         echo "📦 Using Jumpstarter package repository (pkg.jumpstarter.dev)"
         if [ "$VERSION" = "latest" ]; then
             # Use pkg.jumpstarter.dev for latest (currently 0.7.0)
-            PACKAGE_SOURCE="--extra-index-url https://pkg.jumpstarter.dev/simple jumpstarter-cli"
+            EXTRA_INDEX_URL="https://pkg.jumpstarter.dev/simple"
+            PACKAGE_NAME="jumpstarter-cli"
             echo "   Installing latest version from pkg.jumpstarter.dev"
         elif [ "$VERSION" = "main" ]; then
             # Use pkg.jumpstarter.dev/main/ for main branch
-            PACKAGE_SOURCE="--extra-index-url https://pkg.jumpstarter.dev/main/simple jumpstarter-cli"
+            EXTRA_INDEX_URL="https://pkg.jumpstarter.dev/main/simple"
+            PACKAGE_NAME="jumpstarter-cli"
             echo "   Installing main branch from pkg.jumpstarter.dev/main/"
         else
             echo "⚠️  Specific versions not supported on pkg.jumpstarter.dev"
             echo "   Available versions: 'latest' (0.7.0), 'main'"
             echo "   Falling back to latest version"
-            PACKAGE_SOURCE="--extra-index-url https://pkg.jumpstarter.dev/simple jumpstarter-cli"
+            EXTRA_INDEX_URL="https://pkg.jumpstarter.dev/simple"
+            PACKAGE_NAME="jumpstarter-cli"
         fi
         ;;
     "pypi")
         echo "📦 Using PyPI package repository"
         if [ "$VERSION" = "latest" ]; then
-            PACKAGE_SOURCE="jumpstarter-cli"
+            EXTRA_INDEX_URL=""
+            PACKAGE_NAME="jumpstarter-cli"
             echo "   Installing latest version from PyPI"
         else
-            PACKAGE_SOURCE="jumpstarter-cli==$VERSION"
+            EXTRA_INDEX_URL=""
+            PACKAGE_NAME="jumpstarter-cli==$VERSION"
             echo "   Installing version $VERSION from PyPI"
         fi
         ;;
@@ -108,10 +165,12 @@ case "$PACKAGE_REPO" in
         if [[ "$PACKAGE_REPO" =~ ^https?:// ]]; then
             echo "🌐 Using custom package repository: $PACKAGE_REPO"
             if [ "$VERSION" = "latest" ]; then
-                PACKAGE_SOURCE="--extra-index-url $PACKAGE_REPO jumpstarter-cli"
+                EXTRA_INDEX_URL="$PACKAGE_REPO"
+                PACKAGE_NAME="jumpstarter-cli"
                 echo "   Installing latest version from custom repository"
             else
-                PACKAGE_SOURCE="--extra-index-url $PACKAGE_REPO jumpstarter-cli==$VERSION"
+                EXTRA_INDEX_URL="$PACKAGE_REPO"
+                PACKAGE_NAME="jumpstarter-cli==$VERSION"
                 echo "   Installing version $VERSION from custom repository"
             fi
         else
@@ -129,18 +188,34 @@ esac
 echo "Installing Jumpstarter CLI as global tool..."
 echo "   Repository: $PACKAGE_REPO"
 echo "   Version: $VERSION"
-echo "   Command: uv tool install $PACKAGE_SOURCE"
+if [ -n "$EXTRA_INDEX_URL" ]; then
+    echo "   Command: uv tool install --extra-index-url $EXTRA_INDEX_URL $PACKAGE_NAME"
+else
+    echo "   Command: uv tool install $PACKAGE_NAME"
+fi
 
 # Install jumpstarter-cli for the vscode user (or current user)
 if id "vscode" &>/dev/null; then
-    sudo -u vscode uv tool install "$PACKAGE_SOURCE"
+    if [ -n "$EXTRA_INDEX_URL" ]; then
+        sudo -u vscode uv tool install --extra-index-url "$EXTRA_INDEX_URL" "$PACKAGE_NAME"
+    else
+        sudo -u vscode uv tool install "$PACKAGE_NAME"
+    fi
     echo "✅ Jumpstarter CLI installed for vscode user from $PACKAGE_REPO repository"
 elif [ "$USER" != "root" ]; then
-    uv tool install "$PACKAGE_SOURCE"
+    if [ -n "$EXTRA_INDEX_URL" ]; then
+        uv tool install --extra-index-url "$EXTRA_INDEX_URL" "$PACKAGE_NAME"
+    else
+        uv tool install "$PACKAGE_NAME"
+    fi
     echo "✅ Jumpstarter CLI installed for $USER from $PACKAGE_REPO repository"
 else
     # For root user, install globally accessible
-    uv tool install "$PACKAGE_SOURCE"
+    if [ -n "$EXTRA_INDEX_URL" ]; then
+        uv tool install --extra-index-url "$EXTRA_INDEX_URL" "$PACKAGE_NAME"
+    else
+        uv tool install "$PACKAGE_NAME"
+    fi
     # Make sure the tools are available in PATH for all users
     if [ -f "/root/.local/bin/jmp" ]; then
         ln -sf /root/.local/bin/jmp /usr/local/bin/jmp

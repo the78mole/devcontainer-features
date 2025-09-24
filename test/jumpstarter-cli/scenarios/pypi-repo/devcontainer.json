@@ -8,5 +8,8 @@
       "version": "latest",
       "packageRepo": "pypi"
     }
+  },
+  "containerEnv": {
+    "JUMPSTARTER_HOST": "http://localhost:8080"
   }
 }

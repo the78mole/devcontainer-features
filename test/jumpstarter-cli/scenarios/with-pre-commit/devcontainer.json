@@ -11,5 +11,8 @@
       "version": "latest",
       "packageRepo": "jumpstarter"
     }
+  },
+  "containerEnv": {
+    "JUMPSTARTER_HOST": "http://localhost:8080"
   }
 }
