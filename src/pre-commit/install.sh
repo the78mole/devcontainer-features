@@ -30,14 +30,14 @@ echo "   Command: uv tool install $PACKAGE_SOURCE"
 
 # Install pre-commit for the vscode user (or current user)
 if id "vscode" &>/dev/null; then
-    sudo -u vscode uv tool install $PACKAGE_SOURCE
+    sudo -u vscode uv tool install "$PACKAGE_SOURCE"
     echo "✅ pre-commit installed for vscode user"
 elif [ "$USER" != "root" ]; then
-    uv tool install $PACKAGE_SOURCE
+    uv tool install "$PACKAGE_SOURCE"
     echo "✅ pre-commit installed for $USER"
 else
     # For root user, install globally accessible
-    uv tool install $PACKAGE_SOURCE
+    uv tool install "$PACKAGE_SOURCE"
     # Make sure the tool is available in PATH for all users
     if [ -f "/root/.local/bin/pre-commit" ]; then
         ln -sf /root/.local/bin/pre-commit /usr/local/bin/pre-commit

@@ -1,11 +1,12 @@
 # pre-commit Feature
 
-This DevContainer feature installs [pre-commit](https://pre-commit.com/), a framework for managing and maintaining multi-language pre-commit hooks.
+This DevContainer feature installs [pre-commit](https://pre-commit.com/), a
+framework for managing and maintaining multi-language pre-commit hooks.
 
 ## Options
 
-| Option  | Type   | Default  | Description                   |
-| ------- | ------ | -------- | ----------------------------- |
+| Option  | Type   | Default  | Description                      |
+| ------- | ------ | -------- | -------------------------------- |
 | version | string | "latest" | Version of pre-commit to install |
 
 ## Usage

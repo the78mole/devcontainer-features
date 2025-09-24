@@ -1,13 +1,14 @@
 # Jumpstarter CLI Feature
 
-This DevContainer feature installs [Jumpstarter CLI](https://github.com/jumpstarter-dev/jumpstarter), providing the `jmp` and `j` commands as global tools via uv.
+This DevContainer feature installs [Jumpstarter CLI](https://github.com/jumpstarter-dev/jumpstarter),
+providing the `jmp` and `j` commands as global tools via uv.
 
 ## Options
 
-| Option      | Type   | Default       | Description                                                                 |
-| ----------- | ------ | ------------- | --------------------------------------------------------------------------- |
-| version     | string | "latest"      | Version of jumpstarter-cli to install                                      |
-| packageRepo | string | "jumpstarter" | Package repository: 'jumpstarter' (pkg.jumpstarter.dev), 'pypi', or custom URL |
+| Option      | Type   | Default       | Description                           |
+| ----------- | ------ | ------------- | ------------------------------------- |
+| version     | string | "latest"      | Version of jumpstarter-cli to install |
+| packageRepo | string | "jumpstarter" | Package repository to use             |
 
 ## Usage
 
@@ -35,17 +36,20 @@ This feature depends on the `uv` feature and will be installed after it.
 ## Package Repository Options
 
 ### jumpstarter (default)
+
 - Repository: `pkg.jumpstarter.dev`
 - Available versions: `latest` (0.7.0), `main`
 - Use case: Latest features and main branch development
 
 ### pypi
+
 - Repository: PyPI (`pypi.org`)
 - Available versions: Specific versions like `0.6.0`
 - Use case: Stable releases and version-specific installations
 - Note: Latest versions may not be available immediately on PyPI
 
 ### Custom Repository
+
 - Specify a custom package repository URL starting with `https://`
 - Example: `"https://custom-repo.example.com/simple/"`
 - Use case: Private or alternative package repositories
@@ -76,6 +80,7 @@ j --help
 ## Installation Examples
 
 ### Latest from Jumpstarter repository (recommended)
+
 ```json
 {
   "features": {
@@ -88,6 +93,7 @@ j --help
 ```
 
 ### Specific version from PyPI
+
 ```json
 {
   "features": {
@@ -100,6 +106,7 @@ j --help
 ```
 
 ### Custom repository
+
 ```json
 {
   "features": {
