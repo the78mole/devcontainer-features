@@ -72,14 +72,14 @@ echo "   Command: uv tool install $PACKAGE_SOURCE"
 
 # Install jumpstarter-cli for the vscode user (or current user)
 if id "vscode" &>/dev/null; then
-    sudo -u vscode uv tool install "$PACKAGE_SOURCE"
+    sudo -u vscode bash -c "uv tool install $PACKAGE_SOURCE"
     echo "✅ Jumpstarter CLI installed for vscode user from $PACKAGE_REPO repository"
 elif [ "$USER" != "root" ]; then
-    uv tool install "$PACKAGE_SOURCE"
+    bash -c "uv tool install $PACKAGE_SOURCE"
     echo "✅ Jumpstarter CLI installed for $USER from $PACKAGE_REPO repository"
 else
     # For root user, install globally accessible
-    uv tool install "$PACKAGE_SOURCE"
+    bash -c "uv tool install $PACKAGE_SOURCE"
     # Make sure the tools are available in PATH for all users
     if [ -f "/root/.local/bin/jmp" ]; then
         ln -sf /root/.local/bin/jmp /usr/local/bin/jmp
