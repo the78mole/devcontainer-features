@@ -31,7 +31,17 @@ providing the `jmp` and `j` commands as global tools via uv.
 
 ## Dependencies
 
-This feature depends on the `uv` feature and will be installed after it.
+This feature requires the `uv` feature to be installed. Make sure to include both
+features in your devcontainer configuration:
+
+```json
+{
+  "features": {
+    "ghcr.io/the78mole/devcontainer-features/uv": {},
+    "ghcr.io/the78mole/devcontainer-features/jumpstarter-cli": {}
+  }
+}
+```
 
 ## Package Repository Options
 
