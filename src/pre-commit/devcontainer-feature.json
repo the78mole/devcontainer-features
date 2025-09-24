@@ -1,0 +1,17 @@
+{
+  "id": "pre-commit",
+  "version": "1.0.9",
+  "name": "pre-commit",
+  "description": "Installs pre-commit framework for managing pre-commit hooks using uv",
+  "documentationURL": "https://github.com/the78mole/devcontainer-features/tree/main/src/pre-commit",
+  "licenseURL": "https://github.com/the78mole/devcontainer-features/blob/main/LICENSE",
+  "installsAfter": ["ghcr.io/devcontainers/features/python"],
+  "options": {
+    "version": {
+      "type": "string",
+      "proposals": ["latest"],
+      "default": "latest",
+      "description": "Version of pre-commit to install"
+    }
+  }
+}

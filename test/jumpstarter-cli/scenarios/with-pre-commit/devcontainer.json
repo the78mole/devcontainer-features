@@ -1,0 +1,18 @@
+{
+  "image": "mcr.microsoft.com/devcontainers/python:3.12",
+  "features": {
+    "uv": {
+      "version": "latest"
+    },
+    "pre-commit": {
+      "version": "latest"
+    },
+    "jumpstarter-cli": {
+      "version": "latest",
+      "packageRepo": "jumpstarter"
+    }
+  },
+  "containerEnv": {
+    "JUMPSTARTER_HOST": "http://localhost:8080"
+  }
+}

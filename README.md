@@ -26,6 +26,13 @@ To use these features in your devcontainer, add them to your `devcontainer.json`
     },
     "ghcr.io/the78mole/devcontainer-features/uv:1": {
       "version": "latest"
+    },
+    "ghcr.io/the78mole/devcontainer-features/pre-commit:1": {
+      "version": "latest"
+    },
+    "ghcr.io/the78mole/devcontainer-features/jumpstarter-cli:1": {
+      "version": "latest",
+      "packageRepo": "jumpstarter"
     }
   }
 }
@@ -81,6 +88,56 @@ uv run python script.py
 
 # Install packages (pip-compatible)
 uv pip install flask
+```
+
+### pre-commit Feature
+
+The pre-commit feature installs pre-commit, a framework for managing and
+maintaining multi-language pre-commit hooks using uv:
+
+- **Git hooks:** Automatically run checks before commits
+- **Multi-language support:** Works with Python, JavaScript, Go, and more
+- **Fast and reliable:** Cached and parallelized execution
+- **Extensible:** Large ecosystem of available hooks
+
+#### pre-commit Quick Start
+
+After the feature is installed, set up pre-commit in your repository:
+
+```bash
+# Install hooks in your repository
+pre-commit install
+
+# Run hooks against all files
+pre-commit run --all-files
+
+# Update hooks to latest versions
+pre-commit autoupdate
+```
+
+### Jumpstarter CLI Feature
+
+The Jumpstarter CLI feature installs Jumpstarter CLI tools (`jmp` and `j` commands)
+as global tools via uv:
+
+- **Multiple repositories:** Support for jumpstarter, PyPI, and custom repositories
+- **Global access:** Both `jmp` and `j` commands available system-wide
+- **Flexible installation:** Choose from latest, main branch, or specific versions
+- **Hardware automation:** Command-line interface for Jumpstarter hardware management
+
+#### Jumpstarter CLI Quick Start
+
+After the feature is installed, use jumpstarter commands:
+
+```bash
+# Check version
+jmp --version
+
+# Use short alias
+j --version
+
+# Get help
+jmp --help
 ```
 
 ## Development

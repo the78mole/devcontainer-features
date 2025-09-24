@@ -1,0 +1,10 @@
+{
+  "image": "mcr.microsoft.com/devcontainers/python:3.12",
+  "features": {
+    "uv": {},
+    "jumpstarter-cli": {}
+  },
+  "containerEnv": {
+    "JUMPSTARTER_HOST": "http://localhost:8080"
+  }
+}
