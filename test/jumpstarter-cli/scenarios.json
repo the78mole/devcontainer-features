@@ -25,5 +25,31 @@
         "packageRepo": "pypi"
       }
     }
+  },
+  "testing-packages": {
+    "image": "mcr.microsoft.com/devcontainers/python:3.12",
+    "features": {
+      "uv": {
+        "version": "latest"
+      },
+      "jumpstarter-cli": {
+        "version": "latest",
+        "packageRepo": "jumpstarter",
+        "packages": "testing"
+      }
+    }
+  },
+  "all-packages": {
+    "image": "mcr.microsoft.com/devcontainers/python:3.12",
+    "features": {
+      "uv": {
+        "version": "latest"
+      },
+      "jumpstarter-cli": {
+        "version": "latest",
+        "packageRepo": "jumpstarter",
+        "packages": "all"
+      }
+    }
   }
 }
