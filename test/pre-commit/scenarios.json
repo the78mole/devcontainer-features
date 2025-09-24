@@ -1,0 +1,16 @@
+{
+  "with-postgresql": {
+    "image": "mcr.microsoft.com/devcontainers/python:3.12",
+    "features": {
+      "postgresql": {
+        "version": "latest"
+      },
+      "uv": {
+        "version": "latest"
+      },
+      "pre-commit": {
+        "version": "latest"
+      }
+    }
+  }
+}
