@@ -171,16 +171,44 @@ echo "   Repository: $PACKAGE_REPO"
 echo "   Version: $VERSION"
 echo "   Command: $UV_PATH tool install $PACKAGE_SOURCE"
 
-# Install jumpstarter-cli for the vscode user (or current user)
-if id "vscode" &>/dev/null; then
-    sudo -u vscode bash -c "export PATH=\"$HOME/.local/bin:$HOME/.cargo/bin:/usr/local/bin:/root/.local/bin:\$PATH\" && $UV_PATH tool install $PACKAGE_SOURCE"
-    echo "✅ Jumpstarter CLI installed for vscode user from $PACKAGE_REPO repository"
-elif [ "$USER" != "root" ]; then
-    bash -c "export PATH=\"$HOME/.local/bin:$HOME/.cargo/bin:/usr/local/bin:/root/.local/bin:\$PATH\" && $UV_PATH tool install $PACKAGE_SOURCE"
-    echo "✅ Jumpstarter CLI installed for $USER from $PACKAGE_REPO repository"
+# Ensure uv binary is executable before using it
+if [ -f "$UV_PATH" ]; then
+    chmod +x "$UV_PATH" 2>/dev/null || true
+    # Double-check it's executable
+    if [ ! -x "$UV_PATH" ]; then
+        echo "WARNING: $UV_PATH is not executable, trying alternative execution method"
+        # Use python to execute the binary directly
+        python3 -c "
+import subprocess
+import os
+result = subprocess.run(['$UV_PATH', 'tool', 'install', '$PACKAGE_SOURCE'], capture_output=True, text=True)
+print(result.stdout)
+if result.stderr:
+    print('STDERR:', result.stderr)
+exit(result.returncode)
+"
+    else
+        # Normal execution
+        # Install jumpstarter-cli for the vscode user (or current user)
+        if id "vscode" &>/dev/null; then
+            sudo -u vscode bash -c "export PATH=\"$HOME/.local/bin:$HOME/.cargo/bin:/usr/local/bin:/root/.local/bin:\$PATH\" && $UV_PATH tool install $PACKAGE_SOURCE"
+            echo "✅ Jumpstarter CLI installed for vscode user from $PACKAGE_REPO repository"
+        elif [ "$USER" != "root" ]; then
+            bash -c "export PATH=\"$HOME/.local/bin:$HOME/.cargo/bin:/usr/local/bin:/root/.local/bin:\$PATH\" && $UV_PATH tool install $PACKAGE_SOURCE"
+            echo "✅ Jumpstarter CLI installed for $USER from $PACKAGE_REPO repository"
+        else
+            # For root user, install globally accessible
+            bash -c "export PATH=\"$HOME/.local/bin:$HOME/.cargo/bin:/usr/local/bin:/root/.local/bin:\$PATH\" && $UV_PATH tool install $PACKAGE_SOURCE"
+            echo "✅ Jumpstarter CLI installed for root user from $PACKAGE_REPO repository"
+        fi
+    fi
 else
-    # For root user, install globally accessible
-    bash -c "export PATH=\"$HOME/.local/bin:$HOME/.cargo/bin:/usr/local/bin:/root/.local/bin:\$PATH\" && $UV_PATH tool install $PACKAGE_SOURCE"
+    echo "ERROR: uv binary not found at $UV_PATH"
+    exit 1
+fi
+
+# Handle post-installation steps only for normal execution
+if [ -x "$UV_PATH" ]; then
     # Make sure the tools are available in PATH for all users
     if [ -f "/root/.local/bin/jmp" ]; then
         ln -sf /root/.local/bin/jmp /usr/local/bin/jmp

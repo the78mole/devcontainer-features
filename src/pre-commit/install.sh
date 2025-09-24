@@ -127,6 +127,37 @@ echo "Using uv at: $UV_PATH"
 echo "Installing pre-commit as global tool..."
 echo "   Command: $UV_PATH tool install $PACKAGE_SOURCE"
 
+# Ensure uv binary is executable before using it
+if [ -f "$UV_PATH" ]; then
+    chmod +x "$UV_PATH" 2>/dev/null || true
+    # Double-check it's executable
+    if [ ! -x "$UV_PATH" ]; then
+        echo "WARNING: $UV_PATH is not executable, trying alternative execution method"
+        # Use python to execute the binary directly
+        python3 -c "
+import subprocess
+import os
+result = subprocess.run(['$UV_PATH', 'tool', 'install', '$PACKAGE_SOURCE'], capture_output=True, text=True)
+print(result.stdout)
+if result.stderr:
+    print('STDERR:', result.stderr)
+exit(result.returncode)
+"
+    else
+        # Normal execution
+        if [ "$_REMOTE_USER" = "vscode" ]; then
+            sudo -u vscode bash -c "export PATH=\"/root/.local/bin:/home/vscode/.local/bin:/usr/local/bin:\$PATH\" && $UV_PATH tool install $PACKAGE_SOURCE"
+        elif [ "$_REMOTE_USER" = "root" ] || [ "$USER" = "root" ]; then
+            bash -c "export PATH=\"$HOME/.local/bin:/root/.local/bin:/usr/local/bin:\$PATH\" && $UV_PATH tool install $PACKAGE_SOURCE"
+        else
+            bash -c "export PATH=\"/root/.local/bin:/usr/local/bin:\$PATH\" && $UV_PATH tool install $PACKAGE_SOURCE"
+        fi
+    fi
+else
+    echo "ERROR: uv binary not found at $UV_PATH"
+    exit 1
+fi
+
 # Install pre-commit for the vscode user (or current user)
 if id "vscode" &>/dev/null; then
     sudo -u vscode bash -c "export PATH=\"/root/.local/bin:/home/vscode/.local/bin:/usr/local/bin:\$PATH\" && bash $UV_PATH tool install $PACKAGE_SOURCE"
