@@ -6,6 +6,25 @@ VERSION=${VERSION:-"latest"}
 
 echo "Installing pre-commit framework..."
 
+# Check if Python is available (required for pre-commit)
+if ! command -v python3 &> /dev/null && ! command -v python &> /dev/null; then
+    echo "📦 Python not found - installing Python first..."
+    if command -v apt-get &> /dev/null; then
+        apt-get update && apt-get install -y python3 python3-pip python3-venv
+    elif command -v apk &> /dev/null; then
+        apk add python3 py3-pip
+    elif command -v yum &> /dev/null; then
+        yum install -y python3 python3-pip
+    elif command -v pacman &> /dev/null; then
+        pacman -S python python-pip
+    else
+        echo "❌ Cannot install Python - unsupported package manager"
+        echo "   Please use a base image with Python pre-installed"
+        exit 1
+    fi
+    echo "✅ Python installed successfully"
+fi
+
 # Check if uv is available
 if ! command -v uv &> /dev/null; then
     echo "📦 uv not found - installing uv first..."
@@ -48,6 +67,28 @@ if ! command -v uv &> /dev/null; then
         fi
     fi
     echo "✅ uv installed successfully"
+
+    # Ensure uv binary has execute permissions
+    chmod +x /root/.local/bin/uv 2>/dev/null || true
+    chmod +x "$HOME"/.local/bin/uv 2>/dev/null || true
+
+    # Ensure uv is in PATH immediately after installation
+    export PATH="$HOME/.local/bin:$HOME/.cargo/bin:/usr/local/bin:/root/.local/bin:$PATH"
+
+    # Wait a moment for installation to complete
+    sleep 1
+fi
+
+# Final verification that uv is available
+if ! command -v uv &> /dev/null; then
+    echo "❌ uv command not found in PATH after installation"
+    echo "Current PATH: $PATH"
+    echo "Checking common locations:"
+    ls -la "$HOME"/.local/bin/uv 2>/dev/null && echo "Found in $HOME/.local/bin/" || echo "Not in $HOME/.local/bin/"
+    ls -la "$HOME"/.cargo/bin/uv 2>/dev/null && echo "Found in $HOME/.cargo/bin/" || echo "Not in $HOME/.cargo/bin/"
+    ls -la /usr/local/bin/uv 2>/dev/null && echo "Found in /usr/local/bin/" || echo "Not in /usr/local/bin/"
+    ls -la /root/.local/bin/uv 2>/dev/null && echo "Found in /root/.local/bin/" || echo "Not in /root/.local/bin/"
+    exit 1
 fi
 
 # Install pre-commit using uv
@@ -62,20 +103,40 @@ else
     echo "   Installing pre-commit version $VERSION"
 fi
 
+# Find the correct uv path
+UV_PATH=""
+if [ -f "/root/.local/bin/uv" ]; then
+    UV_PATH="/root/.local/bin/uv"
+elif [ -f "$HOME/.local/bin/uv" ]; then
+    UV_PATH="$HOME/.local/bin/uv"
+elif [ -f "$HOME/.cargo/bin/uv" ]; then
+    UV_PATH="$HOME/.cargo/bin/uv"
+elif [ -f "/usr/local/bin/uv" ]; then
+    UV_PATH="/usr/local/bin/uv"
+else
+    echo "❌ Cannot find uv executable"
+    exit 1
+fi
+
+# Ensure the uv binary is executable
+chmod +x "$UV_PATH"
+
+echo "Using uv at: $UV_PATH"
+
 # Install pre-commit as a uv tool for global access
 echo "Installing pre-commit as global tool..."
-echo "   Command: uv tool install $PACKAGE_SOURCE"
+echo "   Command: $UV_PATH tool install $PACKAGE_SOURCE"
 
 # Install pre-commit for the vscode user (or current user)
 if id "vscode" &>/dev/null; then
-    sudo -u vscode bash -c "uv tool install $PACKAGE_SOURCE"
+    sudo -u vscode bash -c "export PATH=\"/root/.local/bin:/home/vscode/.local/bin:/usr/local/bin:\$PATH\" && bash $UV_PATH tool install $PACKAGE_SOURCE"
     echo "✅ pre-commit installed for vscode user"
 elif [ "$USER" != "root" ]; then
-    bash -c "uv tool install $PACKAGE_SOURCE"
+    bash -c "export PATH=\"$HOME/.local/bin:/root/.local/bin:/usr/local/bin:\$PATH\" && bash $UV_PATH tool install $PACKAGE_SOURCE"
     echo "✅ pre-commit installed for $USER"
 else
     # For root user, install globally accessible
-    bash -c "uv tool install $PACKAGE_SOURCE"
+    bash -c "export PATH=\"/root/.local/bin:/usr/local/bin:\$PATH\" && bash $UV_PATH tool install $PACKAGE_SOURCE"
     # Make sure the tool is available in PATH for all users
     if [ -f "/root/.local/bin/pre-commit" ]; then
         ln -sf /root/.local/bin/pre-commit /usr/local/bin/pre-commit

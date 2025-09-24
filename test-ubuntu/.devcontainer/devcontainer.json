@@ -1,0 +1,9 @@
+{
+  "name": "Test Ubuntu Base",
+  "image": "mcr.microsoft.com/devcontainers/base:ubuntu",
+  "features": {
+    "./pre-commit": {
+      "version": "latest"
+    }
+  }
+}
