@@ -9,8 +9,46 @@ echo "Installing Jumpstarter CLI..."
 
 # Check if uv is available
 if ! command -v uv &> /dev/null; then
-    echo "❌ uv not found - Jumpstarter CLI requires uv to be installed first"
-    exit 1
+    echo "📦 uv not found - installing uv first..."
+    # Install curl if not available
+    if ! command -v curl &> /dev/null; then
+        echo "📦 Installing curl..."
+        if command -v apt-get &> /dev/null; then
+            apt-get update && apt-get install -y curl
+        elif command -v apk &> /dev/null; then
+            apk add curl
+        elif command -v yum &> /dev/null; then
+            yum install -y curl
+        elif command -v pacman &> /dev/null; then
+            pacman -S --noconfirm curl
+        else
+            echo "❌ Could not install curl - package manager not found"
+            exit 1
+        fi
+    fi
+
+    # Install uv using the official installer
+    curl -LsSf https://astral.sh/uv/install.sh | sh
+    # Source the environment to make uv available - try multiple locations
+    export PATH="$HOME/.local/bin:$PATH"
+    if ! command -v uv &> /dev/null; then
+        # Try cargo bin location
+        export PATH="$HOME/.cargo/bin:$PATH"
+        if ! command -v uv &> /dev/null; then
+            # Try system-wide location
+            export PATH="/usr/local/bin:$PATH"
+            if ! command -v uv &> /dev/null; then
+                # Try root's local bin
+                export PATH="/root/.local/bin:$PATH"
+                if ! command -v uv &> /dev/null; then
+                    echo "❌ Failed to install uv - please install uv manually first"
+                    echo "Tried paths: \$HOME/.local/bin, \$HOME/.cargo/bin, /usr/local/bin, /root/.local/bin"
+                    exit 1
+                fi
+            fi
+        fi
+    fi
+    echo "✅ uv installed successfully"
 fi
 
 # Determine installation source based on package repository

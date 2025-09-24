@@ -31,8 +31,9 @@ providing the `jmp` and `j` commands as global tools via uv.
 
 ## Dependencies
 
-This feature requires the `uv` feature to be installed. Make sure to include both
-features in your devcontainer configuration:
+This feature requires the `uv` Python package installer. If `uv` is not found, it
+will be automatically installed. For better control, you can explicitly include
+the `uv` feature in your devcontainer configuration:
 
 ```json
 {
@@ -66,10 +67,12 @@ features in your devcontainer configuration:
 
 ## Notes
 
-- This feature requires the `uv` feature to be installed first
-- Jumpstarter CLI is installed as a global uv tool for easy access
-- Both `jmp` and `j` commands are available after installation
-- May require container restart for PATH changes to take effect
+- This feature automatically installs
+  [uv](https://github.com/astral-sh/uv) if not available and
+- jumpstarter-cli is installed as a global uv tool for easy access
+- After installation, you can use `jmp` and `j` commands in your terminal
+- The tool provides access to Jumpstarter CLI functionality for hardware
+  testing and automation
 
 ## Example Commands
 

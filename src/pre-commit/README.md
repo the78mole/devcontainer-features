@@ -28,8 +28,9 @@ framework for managing and maintaining multi-language pre-commit hooks.
 
 ## Dependencies
 
-This feature requires the `uv` feature to be installed. Make sure to include both
-features in your devcontainer configuration:
+This feature requires the `uv` Python package installer. If `uv` is not found, it
+will be automatically installed. For better control, you can explicitly include
+the `uv` feature in your devcontainer configuration:
 
 ```json
 {
@@ -42,7 +43,7 @@ features in your devcontainer configuration:
 
 ## Notes
 
-- This feature requires the `uv` feature to be installed first
+- This feature automatically installs `uv` if not already present
 - pre-commit is installed as a global uv tool for easy access
 - After installation, use `pre-commit install` in your repository to set up git hooks
 - Configuration is done via `.pre-commit-config.yaml` file in your repository root

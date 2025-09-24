@@ -1,10 +1,11 @@
 {
   "id": "jumpstarter-cli",
-  "version": "1.0.4",
+  "version": "1.0.5",
   "name": "Jumpstarter CLI",
   "description": "Installs Jumpstarter CLI (jmp and j commands) as global tools via uv",
   "documentationURL": "https://github.com/the78mole/devcontainer-features/tree/main/src/jumpstarter-cli",
   "licenseURL": "https://github.com/the78mole/devcontainer-features/blob/main/LICENSE",
+  "installsAfter": ["ghcr.io/devcontainers/features/python"],
   "options": {
     "version": {
       "type": "string",
