@@ -6,7 +6,6 @@
   "dependencyDashboardLabels": ["dependencies"],
   "assignees": ["the78mole"],
   "reviewers": ["the78mole"],
-  "schedule": ["before 6am on monday"],
   "timezone": "Europe/Berlin",
   "labels": ["dependencies"],
   "packageRules": [
