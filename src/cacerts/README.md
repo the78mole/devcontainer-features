@@ -1,17 +1,18 @@
 # CA Certificates (cacerts)
 
-This DevContainer feature downloads CA certificates from given URLs and installs
-them into the system trust store.
+This DevContainer feature installs CA certificates from URLs or local file paths
+into the system trust store.
 
 ## Options
 
-| Option | Type   | Default | Description                                                         |
-| ------ | ------ | ------- | ------------------------------------------------------------------- |
-| urls   | string | `""`    | Comma-separated list of URLs pointing to CA certificates to install |
+| Option        | Type    | Default | Description                                                                             |
+| ------------- | ------- | ------- | --------------------------------------------------------------------------------------- |
+| urls          | string  | `""`    | Comma-separated list of URLs or absolute local file paths to CA certificates to install |
+| ignoreMissing | boolean | `false` | When `true`, skip certificates that cannot be downloaded or found instead of failing    |
 
 ## Usage
 
-### Single certificate
+### Single certificate (URL)
 
 ```json
 {
@@ -23,16 +24,46 @@ them into the system trust store.
 }
 ```
 
-### Multiple certificates
+### Local file path
 
-Multiple URLs — including both `.pem` and `.crt` extensions — can be passed as
+Absolute paths to files already present in the container image are supported:
+
+```json
+{
+  "features": {
+    "ghcr.io/the78mole/devcontainer-features/cacerts": {
+      "urls": "/usr/local/share/custom-certs/corporate-ca.crt"
+    }
+  }
+}
+```
+
+### Multiple certificates (mixed URLs and local paths)
+
+Multiple entries — including both URLs and local file paths — can be passed as
 a comma-separated list:
 
 ```json
 {
   "features": {
     "ghcr.io/the78mole/devcontainer-features/cacerts": {
-      "urls": "https://example.com/root-ca.crt,https://example.com/intermediate-ca.pem,https://example.com/issuing-ca.crt"
+      "urls": "https://example.com/root-ca.crt,/opt/certs/intermediate-ca.pem,https://example.com/issuing-ca.crt"
+    }
+  }
+}
+```
+
+### Skip missing certificates
+
+When `ignoreMissing` is `true`, certificates that cannot be downloaded or found
+on the filesystem are silently skipped instead of aborting the installation:
+
+```json
+{
+  "features": {
+    "ghcr.io/the78mole/devcontainer-features/cacerts": {
+      "urls": "https://optional-internal-ca.corp/root.pem",
+      "ignoreMissing": true
     }
   }
 }
@@ -58,10 +89,12 @@ refresh the trust store:
 - `curl` — used to download certificates
 - `openssl` — SSL/TLS toolkit
 
-For every URL provided the feature will:
+For every URL or local path provided the feature will:
 
-1. Download the certificate to the OS-specific cert directory with a `.crt`
-   extension (`.pem` → `.crt` renaming is applied automatically).
+1. **URL** — download the certificate to the OS-specific cert directory.
+   **Local path** — copy the file to the OS-specific cert directory.
+   In both cases a `.crt` extension is used (`.pem` → `.crt` renaming is
+   applied automatically).
 2. On Debian/Alpine: register the certificate path in `/etc/ca-certificates.conf`
    (if not already present).
 3. Run the OS-specific trust-store update command.

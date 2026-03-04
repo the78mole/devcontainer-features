@@ -2,6 +2,7 @@
 set -e
 
 URLS=${URLS:-""}
+IGNOREMISSING=${IGNOREMISSING:-"false"}
 
 echo "Installing CA certificates feature..."
 
@@ -42,17 +43,17 @@ fi
 
 echo "📜 Processing CA certificate URLs..."
 
-# Split comma-separated URLs and process each one
+# Split comma-separated URLs/paths and process each one
 IFS=',' read -ra URL_LIST <<< "${URLS}"
 INSTALLED=0
 
-for url in "${URL_LIST[@]}"; do
+for entry in "${URL_LIST[@]}"; do
     # Strip leading/trailing whitespace
-    url=$(echo "${url}" | tr -d '[:space:]')
-    [ -z "${url}" ] && continue
+    entry=$(echo "${entry}" | tr -d '[:space:]')
+    [ -z "${entry}" ] && continue
 
-    # Derive a safe filename from the URL
-    cert_filename=$(basename "${url}" | sed 's/[^a-zA-Z0-9._-]/_/g')
+    # Derive a safe filename from the URL or path
+    cert_filename=$(basename "${entry}" | sed 's/[^a-zA-Z0-9._-]/_/g')
 
     # Ensure the filename ends with .crt (required by update-ca-certificates)
     case "${cert_filename}" in
@@ -63,25 +64,49 @@ for url in "${URL_LIST[@]}"; do
 
     cert_path="${CERT_DIR}/${cert_filename}"
 
-    echo "   Downloading: ${url}"
-    if curl -fsSL --retry 3 --retry-delay 2 -o "${cert_path}" "${url}"; then
-        echo "   ✅ Saved to: ${cert_path}"
-
-        # Add entry to /etc/ca-certificates.conf if applicable (Debian/Alpine)
-        if [ -n "${CA_CONF}" ]; then
-            conf_entry="${cert_path}"
-            if ! grep -qxF "${conf_entry}" "${CA_CONF}" 2>/dev/null; then
-                echo "${conf_entry}" >> "${CA_CONF}"
-                echo "   📝 Added to ${CA_CONF}"
-            else
-                echo "   ℹ️  Already present in ${CA_CONF}"
+    # Determine whether this is a URL or a local file path
+    case "${entry}" in
+        http://*|https://*|ftp://*)
+            echo "   Downloading: ${entry}"
+            if ! curl -fsSL --retry 3 --retry-delay 2 -o "${cert_path}" "${entry}"; then
+                echo "   ❌ Failed to download: ${entry}"
+                if [ "${IGNOREMISSING}" = "true" ]; then
+                    echo "   ⚠️  Skipping (ignoreMissing=true)"
+                    continue
+                else
+                    exit 1
+                fi
             fi
-        fi
+            ;;
+        *)
+            echo "   Copying local file: ${entry}"
+            if [ ! -f "${entry}" ]; then
+                echo "   ❌ Local file not found: ${entry}"
+                if [ "${IGNOREMISSING}" = "true" ]; then
+                    echo "   ⚠️  Skipping (ignoreMissing=true)"
+                    continue
+                else
+                    exit 1
+                fi
+            fi
+            cp "${entry}" "${cert_path}"
+            ;;
+    esac
 
-        INSTALLED=$((INSTALLED + 1))
-    else
-        echo "   ❌ Failed to download: ${url}"
+    echo "   ✅ Saved to: ${cert_path}"
+
+    # Add entry to /etc/ca-certificates.conf if applicable (Debian/Alpine)
+    if [ -n "${CA_CONF}" ]; then
+        conf_entry="${cert_path}"
+        if ! grep -qxF "${conf_entry}" "${CA_CONF}" 2>/dev/null; then
+            echo "${conf_entry}" >> "${CA_CONF}"
+            echo "   📝 Added to ${CA_CONF}"
+        else
+            echo "   ℹ️  Already present in ${CA_CONF}"
+        fi
     fi
+
+    INSTALLED=$((INSTALLED + 1))
 done
 
 echo ""

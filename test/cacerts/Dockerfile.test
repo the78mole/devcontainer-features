@@ -1,0 +1,8 @@
+FROM mcr.microsoft.com/devcontainers/base:ubuntu
+
+# Create a self-signed test CA certificate for local-file cert tests.
+# openssl is already present in the base devcontainers image.
+RUN openssl req -x509 -nodes -newkey rsa:2048 \
+    -keyout /tmp/test-key.pem -out /tmp/test-local-ca.pem \
+    -days 3650 -subj "/CN=TestLocalCA" && \
+    rm /tmp/test-key.pem

@@ -15,6 +15,34 @@
       }
     }
   },
+  "with-local-cert": {
+    "build": {
+      "dockerfile": "Dockerfile.test"
+    },
+    "features": {
+      "cacerts": {
+        "urls": "/tmp/test-local-ca.pem"
+      }
+    }
+  },
+  "with-ignore-missing": {
+    "image": "mcr.microsoft.com/devcontainers/base:ubuntu",
+    "features": {
+      "cacerts": {
+        "urls": "https://does-not-exist.example.invalid/fake-ca.pem",
+        "ignoreMissing": true
+      }
+    }
+  },
+  "with-ignore-missing-local": {
+    "image": "mcr.microsoft.com/devcontainers/base:ubuntu",
+    "features": {
+      "cacerts": {
+        "urls": "/nonexistent/path/fake-ca.pem",
+        "ignoreMissing": true
+      }
+    }
+  },
   "with-apk": {
     "image": "alpine:latest",
     "features": {
