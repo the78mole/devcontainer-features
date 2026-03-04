@@ -14,5 +14,33 @@
         "urls": "https://letsencrypt.org/certs/isrgrootx1.pem,https://letsencrypt.org/certs/isrg-root-x2.pem"
       }
     }
+  },
+  "with-apk": {
+    "image": "alpine:latest",
+    "features": {
+      "cacerts": {}
+    }
+  },
+  "with-apk-cert": {
+    "image": "alpine:latest",
+    "features": {
+      "cacerts": {
+        "urls": "https://letsencrypt.org/certs/isrgrootx1.pem"
+      }
+    }
+  },
+  "with-yum": {
+    "image": "fedora:latest",
+    "features": {
+      "cacerts": {}
+    }
+  },
+  "with-yum-cert": {
+    "image": "fedora:latest",
+    "features": {
+      "cacerts": {
+        "urls": "https://letsencrypt.org/certs/isrgrootx1.pem"
+      }
+    }
   }
 }
