@@ -5,8 +5,8 @@ them into the system trust store, and runs `update-ca-certificates`.
 
 ## Options
 
-| Option | Type   | Default | Description                                                        |
-| ------ | ------ | ------- | ------------------------------------------------------------------ |
+| Option | Type   | Default | Description                                                         |
+| ------ | ------ | ------- | ------------------------------------------------------------------- |
 | urls   | string | `""`    | Comma-separated list of URLs pointing to CA certificates to install |
 
 ## Usage
@@ -68,11 +68,11 @@ For every URL provided the feature will:
 
 ## Supported certificate file extensions
 
-| Extension | Behaviour                                         |
-| --------- | ------------------------------------------------- |
-| `.crt`    | Used as-is — filename is kept unchanged           |
-| `.pem`    | Extension is replaced with `.crt`                 |
-| other     | `.crt` is appended to the original filename       |
+| Extension | Behaviour                                   |
+| --------- | ------------------------------------------- |
+| `.crt`    | Used as-is — filename is kept unchanged     |
+| `.pem`    | Extension is replaced with `.crt`           |
+| other     | `.crt` is appended to the original filename |
 
 > **Note:** Certificates must be in PEM (Base64) format.
 > DER-encoded binaries are not automatically converted.
