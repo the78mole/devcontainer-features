@@ -1,0 +1,32 @@
+#!/usr/bin/env bash
+
+set -e
+
+# Optional: Import test library
+source dev-container-features-test-lib
+
+# Check that ca-certificates and curl are installed
+check "ca-certificates-installed" dpkg -s ca-certificates
+check "curl-installed" bash -c "curl --version"
+
+# Check that update-ca-certificates is available
+check "update-ca-certificates-available" which update-ca-certificates
+
+# Check that the local cert directory exists
+check "cert-dir-exists" bash -c "test -d /usr/local/share/ca-certificates"
+
+# Check that the ISRG Root X1 cert was downloaded (isrgrootx1.pem → isrgrootx1.crt)
+check "isrg-root-x1-cert-downloaded" bash -c "test -f /usr/local/share/ca-certificates/isrgrootx1.crt"
+
+# Check that the ISRG Root X2 cert was downloaded (isrg-root-x2.pem → isrg-root-x2.crt)
+check "isrg-root-x2-cert-downloaded" bash -c "test -f /usr/local/share/ca-certificates/isrg-root-x2.crt"
+
+# Check that both cert paths were added to /etc/ca-certificates.conf
+check "isrg-root-x1-cert-in-conf" bash -c "grep -qF '/usr/local/share/ca-certificates/isrgrootx1.crt' /etc/ca-certificates.conf"
+check "isrg-root-x2-cert-in-conf" bash -c "grep -qF '/usr/local/share/ca-certificates/isrg-root-x2.crt' /etc/ca-certificates.conf"
+
+# Check that the CA bundle was updated
+check "ca-bundle-present" bash -c "test -f /etc/ssl/certs/ca-certificates.crt"
+
+# Report result
+reportResults
