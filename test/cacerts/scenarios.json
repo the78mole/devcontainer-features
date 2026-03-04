@@ -15,16 +15,6 @@
       }
     }
   },
-  "with-local-cert": {
-    "build": {
-      "dockerfile": "Dockerfile.test"
-    },
-    "features": {
-      "cacerts": {
-        "urls": "/tmp/test-local-ca.pem"
-      }
-    }
-  },
   "with-ignore-missing": {
     "image": "mcr.microsoft.com/devcontainers/base:ubuntu",
     "features": {
