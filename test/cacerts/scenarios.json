@@ -1,0 +1,10 @@
+{
+  "with-custom-cert": {
+    "image": "mcr.microsoft.com/devcontainers/base:ubuntu",
+    "features": {
+      "cacerts": {
+        "urls": "https://letsencrypt.org/certs/isrgrootx1.pem"
+      }
+    }
+  }
+}

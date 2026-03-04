@@ -1,0 +1,15 @@
+{
+  "id": "cacerts",
+  "version": "1.0.0",
+  "name": "CA Certificates",
+  "description": "Downloads CA certificates from given URLs, installs them into /usr/local/share/ca-certificates/, registers them in /etc/ca-certificates.conf and runs update-ca-certificates",
+  "documentationURL": "https://github.com/the78mole/devcontainer-features/tree/main/src/cacerts",
+  "licenseURL": "https://github.com/the78mole/devcontainer-features/blob/main/LICENSE",
+  "options": {
+    "urls": {
+      "type": "string",
+      "default": "",
+      "description": "Comma-separated list of URLs pointing to CA certificates (PEM/CRT format) to install"
+    }
+  }
+}
