@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/bin/sh
 set -e
 
 URLS=${URLS:-""}
@@ -8,18 +8,18 @@ echo "Installing CA certificates feature..."
 
 # Install required packages and set OS-specific variables
 echo "📦 Installing required packages (ca-certificates, curl, openssl)..."
-if command -v apt-get &>/dev/null; then
+if command -v apt-get >/dev/null 2>&1; then
     apt-get update -y
     apt-get install -y ca-certificates curl openssl
     CERT_DIR="/usr/local/share/ca-certificates"
     CA_CONF="/etc/ca-certificates.conf"
     UPDATE_CMD="update-ca-certificates"
-elif command -v apk &>/dev/null; then
+elif command -v apk >/dev/null 2>&1; then
     apk add --no-cache ca-certificates curl openssl
     CERT_DIR="/usr/local/share/ca-certificates"
     CA_CONF="/etc/ca-certificates.conf"
     UPDATE_CMD="update-ca-certificates"
-elif command -v yum &>/dev/null; then
+elif command -v yum >/dev/null 2>&1; then
     yum install -y ca-certificates curl openssl
     CERT_DIR="/etc/pki/ca-trust/source/anchors"
     CA_CONF=""
@@ -43,11 +43,22 @@ fi
 
 echo "📜 Processing CA certificate URLs..."
 
-# Split comma-separated URLs/paths and process each one
-IFS=',' read -ra URL_LIST <<< "${URLS}"
 INSTALLED=0
+remaining="${URLS}"
 
-for entry in "${URL_LIST[@]}"; do
+# Iterate over comma-separated URLs/paths (POSIX sh compatible)
+while [ -n "${remaining}" ]; do
+    case "${remaining}" in
+        *,*)
+            entry="${remaining%%,*}"
+            remaining="${remaining#*,}"
+            ;;
+        *)
+            entry="${remaining}"
+            remaining=""
+            ;;
+    esac
+
     # Strip leading/trailing whitespace
     entry=$(echo "${entry}" | tr -d '[:space:]')
     [ -z "${entry}" ] && continue
