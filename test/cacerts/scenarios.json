@@ -1,0 +1,64 @@
+{
+  "with-custom-cert": {
+    "image": "mcr.microsoft.com/devcontainers/base:ubuntu",
+    "features": {
+      "cacerts": {
+        "urls": "https://letsencrypt.org/certs/isrgrootx1.pem"
+      }
+    }
+  },
+  "with-multiple-urls": {
+    "image": "mcr.microsoft.com/devcontainers/base:ubuntu",
+    "features": {
+      "cacerts": {
+        "urls": "https://letsencrypt.org/certs/isrgrootx1.pem,https://letsencrypt.org/certs/isrg-root-x2.pem"
+      }
+    }
+  },
+  "with-ignore-missing": {
+    "image": "mcr.microsoft.com/devcontainers/base:ubuntu",
+    "features": {
+      "cacerts": {
+        "urls": "https://does-not-exist.example.invalid/fake-ca.pem",
+        "ignoreMissing": true
+      }
+    }
+  },
+  "with-ignore-missing-local": {
+    "image": "mcr.microsoft.com/devcontainers/base:ubuntu",
+    "features": {
+      "cacerts": {
+        "urls": "/nonexistent/path/fake-ca.pem",
+        "ignoreMissing": true
+      }
+    }
+  },
+  "with-apk": {
+    "image": "alpine:latest",
+    "features": {
+      "cacerts": {}
+    }
+  },
+  "with-apk-cert": {
+    "image": "alpine:latest",
+    "features": {
+      "cacerts": {
+        "urls": "https://letsencrypt.org/certs/isrgrootx1.pem"
+      }
+    }
+  },
+  "with-yum": {
+    "image": "fedora:latest",
+    "features": {
+      "cacerts": {}
+    }
+  },
+  "with-yum-cert": {
+    "image": "fedora:latest",
+    "features": {
+      "cacerts": {
+        "urls": "https://letsencrypt.org/certs/isrgrootx1.pem"
+      }
+    }
+  }
+}

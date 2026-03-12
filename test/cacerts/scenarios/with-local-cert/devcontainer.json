@@ -1,0 +1,10 @@
+{
+  "build": {
+    "dockerfile": "Dockerfile.test"
+  },
+  "features": {
+    "../../../../src/cacerts": {
+      "urls": "/tmp/test-local-ca.pem"
+    }
+  }
+}
