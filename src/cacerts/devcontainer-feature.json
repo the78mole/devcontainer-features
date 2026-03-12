@@ -1,6 +1,6 @@
 {
   "id": "cacerts",
-  "version": "1.1.0",
+  "version": "1.1.1",
   "name": "CA Certificates",
   "description": "Installs CA certificates from URLs or local file paths into the system trust store and runs the OS-specific update command",
   "documentationURL": "https://github.com/the78mole/devcontainer-features/tree/main/src/cacerts",
@@ -15,6 +15,11 @@
       "type": "boolean",
       "default": false,
       "description": "When true, skip certificates that cannot be downloaded or found instead of failing the installation"
+    },
+    "searchCerts": {
+      "type": "boolean",
+      "default": false,
+      "description": "When true, treat each entry in 'urls' that is a local directory as a directory to scan for certificate files (*.crt, *.pem) and install all found certificates"
     }
   }
 }

@@ -3,6 +3,7 @@ set -e
 
 URLS=${URLS:-""}
 IGNOREMISSING=${IGNOREMISSING:-"false"}
+SEARCHCERTS=${SEARCHCERTS:-"false"}
 
 echo "Installing CA certificates feature..."
 
@@ -62,6 +63,59 @@ while [ -n "${remaining}" ]; do
     # Strip leading/trailing whitespace
     entry=$(echo "${entry}" | tr -d '[:space:]')
     [ -z "${entry}" ] && continue
+
+    # If searchCerts is enabled and entry is a local directory, scan it for cert files
+    if [ "${SEARCHCERTS}" = "true" ]; then
+        case "${entry}" in
+            http://*|https://*|ftp://*)
+                : # URL — fall through to normal download handling
+                ;;
+            *)
+                if [ -d "${entry}" ]; then
+                    echo "   🔍 Scanning directory: ${entry}"
+                    _scan_tmp=$(mktemp)
+                    find "${entry}" -maxdepth 1 -type f \( -name "*.crt" -o -name "*.pem" \) \
+                        > "${_scan_tmp}" 2>/dev/null || true
+                    if [ ! -s "${_scan_tmp}" ]; then
+                        echo "   ⚠️  No certificate files found in: ${entry}"
+                        rm -f "${_scan_tmp}"
+                        continue
+                    fi
+                    while IFS= read -r cert_file; do
+                        cf_name=$(basename "${cert_file}" | sed 's/[^a-zA-Z0-9._-]/_/g')
+                        case "${cf_name}" in
+                            *.crt) : ;;
+                            *.pem) cf_name="${cf_name%.pem}.crt" ;;
+                            *) cf_name="${cf_name}.crt" ;;
+                        esac
+                        cf_path="${CERT_DIR}/${cf_name}"
+                        echo "   Copying: ${cert_file}"
+                        cp "${cert_file}" "${cf_path}"
+                        echo "   ✅ Saved to: ${cf_path}"
+                        if [ -n "${CA_CONF}" ]; then
+                            if ! grep -qxF "${cf_path}" "${CA_CONF}" 2>/dev/null; then
+                                echo "${cf_path}" >> "${CA_CONF}"
+                                echo "   📝 Added to ${CA_CONF}"
+                            else
+                                echo "   ℹ️  Already present in ${CA_CONF}"
+                            fi
+                        fi
+                        INSTALLED=$((INSTALLED + 1))
+                    done < "${_scan_tmp}"
+                    rm -f "${_scan_tmp}"
+                    continue
+                elif [ ! -f "${entry}" ]; then
+                    echo "   ❌ Path not found (searchCerts=true): ${entry}"
+                    if [ "${IGNOREMISSING}" = "true" ]; then
+                        echo "   ⚠️  Skipping (ignoreMissing=true)"
+                        continue
+                    else
+                        exit 1
+                    fi
+                fi
+                ;;
+        esac
+    fi
 
     # Derive a safe filename from the URL or path
     cert_filename=$(basename "${entry}" | sed 's/[^a-zA-Z0-9._-]/_/g')

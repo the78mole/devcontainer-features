@@ -33,6 +33,16 @@
       }
     }
   },
+  "with-search-certs": {
+    "image": "mcr.microsoft.com/devcontainers/base:ubuntu",
+    "features": {
+      "cacerts": {
+        "urls": "/nonexistent/search-dir",
+        "searchCerts": true,
+        "ignoreMissing": true
+      }
+    }
+  },
   "with-apk": {
     "image": "alpine:latest",
     "features": {
