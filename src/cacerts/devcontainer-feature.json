@@ -15,6 +15,11 @@
       "type": "boolean",
       "default": false,
       "description": "When true, skip certificates that cannot be downloaded or found instead of failing the installation"
+    },
+    "searchCerts": {
+      "type": "boolean",
+      "default": false,
+      "description": "When true, treat each entry in 'urls' that is a local directory as a directory to scan for certificate files (*.crt, *.pem) and install all found certificates"
     }
   }
 }

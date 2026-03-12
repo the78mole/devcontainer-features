@@ -9,6 +9,7 @@ into the system trust store.
 | ------------- | ------- | ------- | --------------------------------------------------------------------------------------- |
 | urls          | string  | `""`    | Comma-separated list of URLs or absolute local file paths to CA certificates to install |
 | ignoreMissing | boolean | `false` | When `true`, skip certificates that cannot be downloaded or found instead of failing    |
+| searchCerts   | boolean | `false` | When `true`, treat each local directory entry in `urls` as a directory to scan for `*.crt` / `*.pem` certificate files and install all of them |
 
 ## Usage
 
@@ -82,6 +83,56 @@ refresh the trust store:
   }
 }
 ```
+
+### Scan a mounted certificate directory
+
+When `searchCerts` is `true`, each local path in `urls` that resolves to a
+directory at feature-installation time is scanned for `*.crt` and `*.pem`
+files. Every certificate found is installed into the system trust store.
+
+This is especially useful when you mount a workspace-local directory containing
+your organisation's CA certificates into the container:
+
+```json
+// .devcontainer/devcontainer.json
+{
+  "name": "My project with custom certs",
+  "image": "mcr.microsoft.com/devcontainers/base:ubuntu",
+  "features": {
+    "ghcr.io/the78mole/devcontainer-features/cacerts:1": {
+      "urls": "/usr/local/share/ca-certificates/local-certs",
+      "searchCerts": true,
+      "ignoreMissing": true
+    }
+  },
+  "mounts": [
+    "source=${localWorkspaceFolder}/.devcontainer/certs,target=/usr/local/share/ca-certificates/local-certs,type=bind,consistency=cached"
+  ]
+}
+```
+
+> **Note:** DevContainer feature scripts run during the image-build phase,
+> *before* bind mounts are applied. If the target directory does not yet exist
+> at build time (e.g. when using `mounts`), set `ignoreMissing: true` so the
+> build does not fail.
+>
+> You have two options to make the certificates available to the trust store:
+>
+> 1. **Build-time only** — bake the certificates into the image or copy them in
+>    a custom `Dockerfile` step *before* the feature runs. `searchCerts: true`
+>    will then find and install them at build time.
+>
+> 2. **Runtime mount + post-create hook** — use `mounts` to bind-mount your
+>    cert directory and set `ignoreMissing: true` for the build phase. Then
+>    re-run the trust-store update after the container starts by adding a
+>    `postCreateCommand` to your `devcontainer.json`:
+>
+>    ```json
+>    "postCreateCommand": "update-ca-certificates"
+>    ```
+>
+>    This ensures the mounted certificates are registered in the running
+>    container's trust store.
 
 ## What's Installed
 
