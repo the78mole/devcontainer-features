@@ -15,7 +15,7 @@ if command -v apt-get >/dev/null 2>&1; then
     CA_CONF="/etc/ca-certificates.conf"
     UPDATE_CMD="update-ca-certificates"
 elif command -v apk >/dev/null 2>&1; then
-    apk add --no-cache ca-certificates curl openssl
+    apk add --no-cache ca-certificates curl openssl bash
     CERT_DIR="/usr/local/share/ca-certificates"
     CA_CONF="/etc/ca-certificates.conf"
     UPDATE_CMD="update-ca-certificates"

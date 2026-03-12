@@ -11,7 +11,7 @@ check "curl-installed" bash -c "curl --version"
 check "openssl-installed" bash -c "openssl version"
 
 # Check that update-ca-trust command is available
-check "update-ca-trust-available" which update-ca-trust
+check "update-ca-trust-available" command -v update-ca-trust
 
 # Check that the cert trust anchor directory exists
 check "cert-dir-exists" bash -c "test -d /etc/pki/ca-trust/source/anchors"

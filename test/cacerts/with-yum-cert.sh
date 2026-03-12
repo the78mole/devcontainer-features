@@ -10,7 +10,7 @@ check "ca-certificates-installed" bash -c "rpm -q ca-certificates"
 check "curl-installed" bash -c "curl --version"
 
 # Check that update-ca-trust is available
-check "update-ca-trust-available" which update-ca-trust
+check "update-ca-trust-available" command -v update-ca-trust
 
 # Check that the cert trust anchor directory exists
 check "cert-dir-exists" bash -c "test -d /etc/pki/ca-trust/source/anchors"

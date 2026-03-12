@@ -10,7 +10,7 @@ check "ca-certificates-installed" apk info -e ca-certificates
 check "curl-installed" bash -c "curl --version"
 
 # Check that update-ca-certificates is available
-check "update-ca-certificates-available" which update-ca-certificates
+check "update-ca-certificates-available" command -v update-ca-certificates
 
 # Check that the local cert directory exists
 check "cert-dir-exists" bash -c "test -d /usr/local/share/ca-certificates"
