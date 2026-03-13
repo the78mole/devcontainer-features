@@ -1,0 +1,27 @@
+{
+  "name": "devcontainer-features-demo",
+  "image": "mcr.microsoft.com/devcontainers/base:ubuntu",
+  "features": {
+    "ghcr.io/devcontainers/features/common-utils:2": {
+      "installZsh": true,
+      "configureZshAsDefaultShell": false,
+      "installOhMyZsh": false,
+      "upgradePackages": false,
+      "username": "vscode",
+      "userUid": "automatic",
+      "userGid": "automatic"
+    },
+    "ghcr.io/the78mole/devcontainer-features/uv:1.1.0": {},
+    "ghcr.io/the78mole/devcontainer-features/pre-commit": {},
+    "ghcr.io/devcontainers/features/docker-outside-of-docker:1": {},
+    "ghcr.io/devcontainers/features/node:1": {
+      "version": "lts"
+    }
+  },
+  "postCreateCommand": "npm install -g @devcontainers/cli",
+  "customizations": {
+    "vscode": {
+      "extensions": ["github.vscode-github-actions"]
+    }
+  }
+}

@@ -5,49 +5,109 @@ on:
   workflow_dispatch:
 
 jobs:
-  version:
+  detect-features:
     runs-on: ubuntu-latest
     permissions:
-      contents: write
+      contents: read
     outputs:
-      version: ${{ steps.version.outputs.version }}
-      version-tag: ${{ steps.version.outputs.version_tag }}
-      changed: ${{ steps.version.outputs.changed }}
+      features: ${{ steps.get-features.outputs.features }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+
+      - name: Setup jq
+        run: sudo apt-get update && sudo apt-get install -y jq
+
+      - name: Get features
+        id: get-features
+        run: |
+          features=$(./.github/scripts/get-features.sh)
+          echo "features=$(echo "$features" | tr -d '\n')" >> $GITHUB_OUTPUT
+
+  version:
+    runs-on: ubuntu-latest
+    needs: detect-features
+    permissions:
+      contents: write
+    strategy:
+      fail-fast: false
+      matrix:
+        feature: ${{ fromJson(needs.detect-features.outputs.features) }}
     steps:
       - name: Checkout
         uses: actions/checkout@v6
         with:
           fetch-depth: 0
 
-      - name: Generate version
+      - name: Generate version for ${{ matrix.feature }}
         id: version
         uses: paulhatch/semantic-version@v6.0.1
         with:
-          # The prefix to use to identify tags
-          tag_prefix: "v"
-          # A string which, if present in a git commit, indicates that a change represents a
-          # major (breaking) change, supports regular expressions wrapped with '/'
+          tag_prefix: "${{ matrix.feature }}/v"
           major_pattern: "/(\\+semver:\\s?(breaking|major)|!:)/"
-          # A string which indicates the flags used by the `major_pattern` regular expression. Optional; defaults to 'gm'.
           major_regexp_flags: "gm"
-          # Same as above except indicating a minor change, supports regular expressions wrapped with '/'
           minor_pattern: "/(\\+semver:\\s?(feature|minor)|^feat|^fix|^perf|^refactor)/"
-          # A string which indicates the flags used by the `minor_pattern` regular expression. Optional; defaults to 'gm'.
           minor_regexp_flags: "gmi"
-          # A string to determine the format of the version output
           version_format: "${major}.${minor}.${patch}"
-          # Optional path to check for changes. If any changes are detected in the path the
-          # 'changed' output will true. Enter multiple paths separated by spaces.
-          change_path: "src/"
-          # Named version, will be used as suffix for name version tag
-          namespace: ""
-          # If this is set to true, *every* commit will be treated as a new version.
+          change_path: "src/${{ matrix.feature }} test/${{ matrix.feature }}"
           bump_each_commit: true
+
+      - name: Create feature version tag
+        if: ${{ steps.version.outputs.changed == 'true' && !env.ACT }}
+        run: |
+          git config --local user.email "action@github.com"
+          git config --local user.name "GitHub Action"
+          git tag "${{ matrix.feature }}/v${{ steps.version.outputs.version }}"
+          git push origin "${{ matrix.feature }}/v${{ steps.version.outputs.version }}"
+
+      - name: Save version info
+        run: |
+          mkdir -p version-info
+          {
+            echo "FEATURE=${{ matrix.feature }}"
+            echo "VERSION=${{ steps.version.outputs.version }}"
+            echo "VERSION_TAG=${{ matrix.feature }}/v${{ steps.version.outputs.version }}"
+            echo "CHANGED=${{ steps.version.outputs.changed }}"
+          } > version-info/info.env
+
+      - name: Upload version info
+        uses: actions/upload-artifact@v4
+        with:
+          name: version-${{ matrix.feature }}
+          path: version-info/info.env
+
+  summarize-changes:
+    runs-on: ubuntu-latest
+    needs: version
+    permissions:
+      actions: read
+    outputs:
+      any_changed: ${{ steps.check.outputs.any_changed }}
+    steps:
+      - name: Download all version artifacts
+        uses: actions/download-artifact@v4
+        with:
+          pattern: version-*
+          path: ./version-artifacts
+
+      - name: Check if any feature changed
+        id: check
+        run: |
+          any_changed=false
+          for artifact_dir in ./version-artifacts/version-*/; do
+            if grep -q "CHANGED=true" "${artifact_dir}/info.env" 2>/dev/null; then
+              any_changed=true
+              break
+            fi
+          done
+          echo "any_changed=${any_changed}" >> $GITHUB_OUTPUT
 
   pre-release-checks:
     runs-on: ubuntu-latest
-    needs: version
-    if: ${{ needs.version.outputs.changed == 'true' }}
+    needs: summarize-changes
+    permissions:
+      contents: read
+    if: ${{ needs.summarize-changes.outputs.any_changed == 'true' }}
     steps:
       - name: Checkout
         uses: actions/checkout@v6
@@ -75,86 +135,76 @@ jobs:
           echo "Testing features: $features"
           devcontainer features test --skip-scenarios . -i ubuntu:latest
 
-  create-release:
+  create-releases:
     runs-on: ubuntu-latest
-    needs: [version, pre-release-checks]
-    if: ${{ needs.version.outputs.changed == 'true' }}
+    needs: [summarize-changes, pre-release-checks]
+    if: ${{ needs.summarize-changes.outputs.any_changed == 'true' }}
     permissions:
       contents: write
     steps:
       - name: Checkout
         uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
 
       - name: Setup jq
         run: sudo apt-get update && sudo apt-get install -y jq
 
-      - name: Get features list
-        id: features
-        run: |
-          features=$(./.github/scripts/get-features.sh)
-          echo "features=$features" >> $GITHUB_OUTPUT
-          # Create formatted feature list for release notes
-          feature_list=""
-          for feature in $(echo $features | jq -r '.[]'); do
-            feature_list="${feature_list}- **${feature}**: $(jq -r '.description' src/${feature}/devcontainer-feature.json)"$'\n'
-          done
-          echo "formatted_list<<EOF" >> $GITHUB_OUTPUT
-          echo "$feature_list" >> $GITHUB_OUTPUT
-          echo "EOF" >> $GITHUB_OUTPUT
-
-      - name: Create tag
-        if: ${{ !env.ACT }}
-        run: |
-          git config --local user.email "action@github.com"
-          git config --local user.name "GitHub Action"
-          git tag ${{ needs.version.outputs.version-tag }}
-          git push origin ${{ needs.version.outputs.version-tag }}
-
-      - name: Create Release
-        if: ${{ !env.ACT }}
-        uses: ncipollo/release-action@v1
+      - name: Download all version artifacts
+        uses: actions/download-artifact@v4
         with:
-          tag: ${{ needs.version.outputs.version-tag }}
-          name: Release ${{ needs.version.outputs.version-tag }}
-          body: |
-            ## Changes in ${{ needs.version.outputs.version-tag }}
+          pattern: version-*
+          path: ./version-artifacts
 
-            ### Features
-            This release includes the following devcontainer features:
+      - name: Create per-feature releases
+        if: ${{ !env.ACT }}
+        run: |
+          # Build full devcontainer.json example with all features at their current versions
+          ENTRIES=""
+          for artifact_dir in ./version-artifacts/version-*/; do
+            F_FEATURE=$(grep "^FEATURE=" "${artifact_dir}/info.env" | cut -d= -f2)
+            F_VERSION=$(grep "^VERSION=" "${artifact_dir}/info.env" | cut -d= -f2)
+            ENTRY="    \"ghcr.io/the78mole/devcontainer-features/${F_FEATURE}:${F_VERSION}\": {}"
+            if [[ -n "$ENTRIES" ]]; then
+              ENTRIES="${ENTRIES},"$'\n'"${ENTRY}"
+            else
+              ENTRIES="${ENTRY}"
+            fi
+          done
 
-            ${{ steps.features.outputs.formatted_list }}
+          DEVCONTAINER_EXAMPLE=$(printf '{\n  "features": {\n%s\n  }\n}' "${ENTRIES}")
 
-            ### Usage
-            Add this to your `devcontainer.json`:
-            ```json
-            {
-              "features": {
-                "ghcr.io/the78mole/devcontainer-features/postgresql:${{ needs.version.outputs.version }}": {}
-              }
-            }
-            ```
+          # Create a GitHub release for each changed feature
+          for artifact_dir in ./version-artifacts/version-*/; do
+            F_FEATURE=$(grep "^FEATURE=" "${artifact_dir}/info.env" | cut -d= -f2)
+            F_VERSION=$(grep "^VERSION=" "${artifact_dir}/info.env" | cut -d= -f2)
+            F_VERSION_TAG=$(grep "^VERSION_TAG=" "${artifact_dir}/info.env" | cut -d= -f2)
+            F_CHANGED=$(grep "^CHANGED=" "${artifact_dir}/info.env" | cut -d= -f2)
 
-            ### What's Changed
-            - PostgreSQL feature with support for versions 11-17
-            - Automatic binary symlinks for easy access
-            - Support for Ubuntu 22.04+ and Debian 11+ base images
-            - Comprehensive testing across multiple PostgreSQL versions
-          draft: false
-          prerelease: false
-          token: ${{ secrets.GITHUB_TOKEN }}
+            if [[ "$F_CHANGED" == "true" ]]; then
+              F_NAME=$(jq -r '.name // .id' "src/${F_FEATURE}/devcontainer-feature.json")
+              F_DESC=$(jq -r '.description // "No description"' "src/${F_FEATURE}/devcontainer-feature.json")
+
+              RELEASE_NOTES=$(printf '## %s %s\n\n%s\n\n### Usage\n\nAdd to your `devcontainer.json`:\n\n```json\n%s\n```' \
+                "${F_NAME}" "${F_VERSION}" "${F_DESC}" "${DEVCONTAINER_EXAMPLE}")
+              gh release create "${F_VERSION_TAG}" \
+                --title "${F_NAME} ${F_VERSION}" \
+                --notes "${RELEASE_NOTES}"
+            fi
+          done
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
   deploy:
     runs-on: ubuntu-latest
-    needs: [version, create-release]
-    if: ${{ needs.version.outputs.changed == 'true' }}
+    needs: [summarize-changes, create-releases]
+    if: ${{ needs.summarize-changes.outputs.any_changed == 'true' }}
     permissions:
       contents: read
       packages: write
     steps:
       - name: Checkout
         uses: actions/checkout@v6
-        with:
-          ref: ${{ needs.version.outputs.version-tag }}
 
       - name: "Publish Features"
         if: ${{ !env.ACT }}

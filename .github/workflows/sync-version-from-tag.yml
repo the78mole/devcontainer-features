@@ -1,0 +1,100 @@
+name: "Sync Version from Tag"
+
+on:
+  push:
+    tags:
+      - "*/v[0-9]*"
+
+jobs:
+  sync-version:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      actions: write
+    outputs:
+      feature: ${{ steps.parse.outputs.feature }}
+      version: ${{ steps.parse.outputs.version }}
+      changed: ${{ steps.update.outputs.changed }}
+    steps:
+      - name: Parse tag
+        id: parse
+        run: |
+          TAG="${GITHUB_REF#refs/tags/}"
+          FEATURE="${TAG%%/v*}"
+          VERSION="${TAG#*/v}"
+          echo "feature=${FEATURE}" >> $GITHUB_OUTPUT
+          echo "version=${VERSION}" >> $GITHUB_OUTPUT
+          echo "tag=${TAG}" >> $GITHUB_OUTPUT
+
+      - name: Checkout
+        uses: actions/checkout@v6
+        with:
+          ref: main
+          token: ${{ secrets.GITHUB_TOKEN }}
+          fetch-depth: 0
+
+      - name: Setup jq
+        run: sudo apt-get update && sudo apt-get install -y jq
+
+      - name: Update devcontainer-feature.json version
+        id: update
+        run: |
+          FEATURE="${{ steps.parse.outputs.feature }}"
+          VERSION="${{ steps.parse.outputs.version }}"
+          JSON_FILE="src/${FEATURE}/devcontainer-feature.json"
+
+          if [[ ! -f "$JSON_FILE" ]]; then
+            echo "Feature ${FEATURE} not found at ${JSON_FILE}, skipping."
+            echo "changed=false" >> $GITHUB_OUTPUT
+            exit 0
+          fi
+
+          CURRENT=$(jq -r '.version' "$JSON_FILE")
+          if [[ "$CURRENT" == "$VERSION" ]]; then
+            echo "Version already ${VERSION}, no update needed."
+            echo "changed=false" >> $GITHUB_OUTPUT
+            exit 0
+          fi
+
+          jq --arg v "$VERSION" '.version = $v' "$JSON_FILE" > tmp.json && mv tmp.json "$JSON_FILE"
+          echo "Updated ${JSON_FILE}: ${CURRENT} -> ${VERSION}"
+          echo "changed=true" >> $GITHUB_OUTPUT
+
+      - name: Commit and push version update
+        if: steps.update.outputs.changed == 'true'
+        run: |
+          git config user.email "action@github.com"
+          git config user.name "GitHub Action"
+          git add "src/${{ steps.parse.outputs.feature }}/devcontainer-feature.json"
+          git commit -m "chore: sync ${{ steps.parse.outputs.feature }} version to ${{ steps.parse.outputs.version }} [skip ci]"
+          git push origin main
+
+      - name: Trigger CI tests
+        run: |
+          gh workflow run test.yml \
+            --ref main \
+            --field feature="${{ steps.parse.outputs.feature }}"
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+  publish:
+    runs-on: ubuntu-latest
+    needs: sync-version
+    permissions:
+      contents: read
+      packages: write
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+        with:
+          ref: main
+
+      - name: Publish feature
+        if: ${{ !env.ACT }}
+        uses: devcontainers/action@v1
+        with:
+          publish-features: "true"
+          base-path-to-features: "./src"
+          generate-docs: "true"
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
