@@ -18,7 +18,7 @@ into the system trust store.
 ```json
 {
   "features": {
-    "ghcr.io/the78mole/devcontainer-features/cacerts": {
+    "ghcr.io/the78mole/devcontainer-features/cacerts:1": {
       "urls": "https://example.com/my-corporate-ca.pem"
     }
   }
@@ -32,7 +32,7 @@ Absolute paths to files already present in the container image are supported:
 ```json
 {
   "features": {
-    "ghcr.io/the78mole/devcontainer-features/cacerts": {
+    "ghcr.io/the78mole/devcontainer-features/cacerts:1": {
       "urls": "/usr/local/share/custom-certs/corporate-ca.crt"
     }
   }
@@ -47,7 +47,7 @@ a comma-separated list:
 ```json
 {
   "features": {
-    "ghcr.io/the78mole/devcontainer-features/cacerts": {
+    "ghcr.io/the78mole/devcontainer-features/cacerts:1": {
       "urls": "https://example.com/root-ca.crt,/opt/certs/intermediate-ca.pem,https://example.com/issuing-ca.crt"
     }
   }
@@ -62,7 +62,7 @@ on the filesystem are silently skipped instead of aborting the installation:
 ```json
 {
   "features": {
-    "ghcr.io/the78mole/devcontainer-features/cacerts": {
+    "ghcr.io/the78mole/devcontainer-features/cacerts:1": {
       "urls": "https://optional-internal-ca.corp/root.pem",
       "ignoreMissing": true
     }
@@ -79,7 +79,7 @@ refresh the trust store:
 ```json
 {
   "features": {
-    "ghcr.io/the78mole/devcontainer-features/cacerts": {}
+    "ghcr.io/the78mole/devcontainer-features/cacerts:1": {}
   }
 }
 ```

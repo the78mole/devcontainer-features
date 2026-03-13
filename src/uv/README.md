@@ -14,7 +14,7 @@ extremely fast Python package and project manager written in Rust.
 ```json
 {
   "features": {
-    "ghcr.io/the78mole/devcontainer-features/uv": {
+    "ghcr.io/the78mole/devcontainer-features/uv:1": {
       "version": "latest"
     }
   }

@@ -14,7 +14,7 @@ framework for managing and maintaining multi-language pre-commit hooks.
 ```json
 {
   "features": {
-    "ghcr.io/the78mole/devcontainer-features/pre-commit": {
+    "ghcr.io/the78mole/devcontainer-features/pre-commit:1": {
       "version": "latest"
     }
   }
@@ -36,7 +36,7 @@ the `uv` feature in your devcontainer configuration:
 {
   "features": {
     "ghcr.io/the78mole/devcontainer-features/uv": {},
-    "ghcr.io/the78mole/devcontainer-features/pre-commit": {}
+    "ghcr.io/the78mole/devcontainer-features/pre-commit:1": {}
   }
 }
 ```

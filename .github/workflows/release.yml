@@ -39,26 +39,58 @@ jobs:
         with:
           fetch-depth: 0
 
-      - name: Generate version for ${{ matrix.feature }}
+      - name: Resolve version for ${{ matrix.feature }}
         id: version
-        uses: paulhatch/semantic-version@v6.0.1
-        with:
-          tag_prefix: "${{ matrix.feature }}/v"
-          major_pattern: "/(\\+semver:\\s?(breaking|major)|!:)/"
-          major_regexp_flags: "gm"
-          minor_pattern: "/(\\+semver:\\s?(feature|minor)|^feat|^fix|^perf|^refactor)/"
-          minor_regexp_flags: "gmi"
-          version_format: "${major}.${minor}.${patch}"
-          change_path: "src/${{ matrix.feature }} test/${{ matrix.feature }}"
-          bump_each_commit: true
+        run: |
+          feature="${{ matrix.feature }}"
+          feature_file="src/${feature}/devcontainer-feature.json"
+          current_version=$(jq -r '.version' "${feature_file}")
+
+          if ! [[ "${current_version}" =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
+            echo "Invalid version '${current_version}' in ${feature_file}. Expected SemVer X.Y.Z"
+            exit 1
+          fi
+
+          base_sha="${{ github.event.before }}"
+          if [[ -z "${base_sha}" || "${base_sha}" == "0000000000000000000000000000000000000000" ]]; then
+            if git rev-parse --verify HEAD~1 >/dev/null 2>&1; then
+              base_sha=$(git rev-parse HEAD~1)
+            else
+              base_sha=""
+            fi
+          fi
+
+          changed=false
+          previous_version=""
+          if [[ -n "${base_sha}" ]] && git cat-file -e "${base_sha}^{commit}" 2>/dev/null; then
+            previous_version=$(git show "${base_sha}:${feature_file}" 2>/dev/null | jq -r '.version // empty' || true)
+            if [[ "${previous_version}" != "${current_version}" ]]; then
+              changed=true
+            fi
+          fi
+
+          echo "Current version: ${current_version}"
+          echo "Previous version: ${previous_version:-<none>}"
+          echo "Version changed: ${changed}"
+
+          echo "version=${current_version}" >> "$GITHUB_OUTPUT"
+          echo "changed=${changed}" >> "$GITHUB_OUTPUT"
 
       - name: Create feature version tag
         if: ${{ steps.version.outputs.changed == 'true' && !env.ACT }}
         run: |
           git config --local user.email "action@github.com"
           git config --local user.name "GitHub Action"
-          git tag "${{ matrix.feature }}/v${{ steps.version.outputs.version }}"
-          git push origin "${{ matrix.feature }}/v${{ steps.version.outputs.version }}"
+          tag="${{ matrix.feature }}/v${{ steps.version.outputs.version }}"
+
+          # Make the step idempotent for workflow re-runs.
+          if git rev-parse -q --verify "refs/tags/${tag}" >/dev/null || \
+             git ls-remote --exit-code --tags origin "refs/tags/${tag}" >/dev/null; then
+            echo "Tag ${tag} already exists. Skipping creation."
+          else
+            git tag "${tag}"
+            git push origin "${tag}"
+          fi
 
       - name: Save version info
         run: |

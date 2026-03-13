@@ -16,7 +16,7 @@ providing the `jmp` and `j` commands as global tools via uv.
 ```json
 {
   "features": {
-    "ghcr.io/the78mole/devcontainer-features/jumpstarter-cli": {
+    "ghcr.io/the78mole/devcontainer-features/jumpstarter-cli:1": {
       "version": "latest",
       "packageRepo": "jumpstarter",
       "packages": "testing"
@@ -99,7 +99,7 @@ the `uv` feature in your devcontainer configuration:
 {
   "features": {
     "ghcr.io/the78mole/devcontainer-features/uv": {},
-    "ghcr.io/the78mole/devcontainer-features/jumpstarter-cli": {}
+    "ghcr.io/the78mole/devcontainer-features/jumpstarter-cli:1": {}
   }
 }
 ```
@@ -178,7 +178,7 @@ jmp shell --exporter example-local
 ```json
 {
   "features": {
-    "ghcr.io/the78mole/devcontainer-features/jumpstarter-cli": {
+    "ghcr.io/the78mole/devcontainer-features/jumpstarter-cli:1": {
       "version": "latest",
       "packageRepo": "jumpstarter"
     }
@@ -191,7 +191,7 @@ jmp shell --exporter example-local
 ```json
 {
   "features": {
-    "ghcr.io/the78mole/devcontainer-features/jumpstarter-cli": {
+    "ghcr.io/the78mole/devcontainer-features/jumpstarter-cli:1": {
       "version": "0.6.0",
       "packageRepo": "pypi"
     }
@@ -204,7 +204,7 @@ jmp shell --exporter example-local
 ```json
 {
   "features": {
-    "ghcr.io/the78mole/devcontainer-features/jumpstarter-cli": {
+    "ghcr.io/the78mole/devcontainer-features/jumpstarter-cli:1": {
       "version": "latest",
       "packageRepo": "https://pkg.jumpstarter.dev/simple/"
     }
@@ -217,7 +217,7 @@ jmp shell --exporter example-local
 ```json
 {
   "features": {
-    "ghcr.io/the78mole/devcontainer-features/jumpstarter-cli": {
+    "ghcr.io/the78mole/devcontainer-features/jumpstarter-cli:1": {
       "version": "latest",
       "packageRepo": "jumpstarter",
       "packages": "testing"
@@ -231,7 +231,7 @@ jmp shell --exporter example-local
 ```json
 {
   "features": {
-    "ghcr.io/the78mole/devcontainer-features/jumpstarter-cli": {
+    "ghcr.io/the78mole/devcontainer-features/jumpstarter-cli:1": {
       "version": "latest",
       "packageRepo": "jumpstarter",
       "packages": "all"

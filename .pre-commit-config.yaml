@@ -53,3 +53,10 @@ repos:
         language: system
         files: 'test/.*/test\.sh$'
         pass_filenames: false
+
+      - id: check-feature-readme-versions
+        name: Check feature versions in devcontainer-feature.json and README
+        entry: bash scripts/check-feature-readme-versions.sh
+        language: system
+        files: 'src/.*/(devcontainer-feature\.json|README\.md)$'
+        pass_filenames: false

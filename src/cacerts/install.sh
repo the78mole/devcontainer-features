@@ -89,9 +89,13 @@ while [ -n "${remaining}" ]; do
                             *) cf_name="${cf_name}.crt" ;;
                         esac
                         cf_path="${CERT_DIR}/${cf_name}"
-                        echo "   Copying: ${cert_file}"
-                        cp "${cert_file}" "${cf_path}"
-                        echo "   ✅ Saved to: ${cf_path}"
+                        if [ "${cert_file}" = "${cf_path}" ]; then
+                            echo "   ℹ️ Don't copy '${cert_file}', already at the right place."
+                        else
+                            echo "   Copying: ${cert_file}"
+                            cp "${cert_file}" "${cf_path}"
+                            echo "   ✅ Saved to: ${cf_path}"
+                        fi
                         if [ -n "${CA_CONF}" ]; then
                             if ! grep -qxF "${cf_path}" "${CA_CONF}" 2>/dev/null; then
                                 echo "${cf_path}" >> "${CA_CONF}"
