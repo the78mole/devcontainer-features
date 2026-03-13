@@ -1,7 +1,19 @@
 {
   "name": "devcontainer-features-demo",
-  "image": "mcr.microsoft.com/devcontainers/base:ubuntu",
+  "build": {
+    "dockerfile": "Dockerfile",
+    "context": "."
+  },
+  "containerEnv": {
+    "NODE_EXTRA_CA_CERTS": "/etc/ssl/certs/ca-certificates.crt",
+    "SSL_CERT_FILE": "/etc/ssl/certs/ca-certificates.crt"
+  },
   "features": {
+    "ghcr.io/the78mole/devcontainer-features/cacerts": {
+      "urls": "/usr/local/share/ca-certificates/",
+      "searchCerts": true,
+      "ignoreMissing": true
+    },
     "ghcr.io/devcontainers/features/common-utils:2": {
       "installZsh": true,
       "configureZshAsDefaultShell": false,
