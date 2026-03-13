@@ -4,6 +4,12 @@ on:
     branches: [main]
   pull_request:
     branches: [main]
+  workflow_dispatch:
+    inputs:
+      feature:
+        description: "Feature to test (leave empty for all)"
+        required: false
+        default: ""
 
 jobs:
   pre-commit:
