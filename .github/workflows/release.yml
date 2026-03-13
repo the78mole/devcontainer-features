@@ -166,18 +166,13 @@ jobs:
             F_VERSION=$(grep "^VERSION=" "${artifact_dir}/info.env" | cut -d= -f2)
             ENTRY="    \"ghcr.io/the78mole/devcontainer-features/${F_FEATURE}:${F_VERSION}\": {}"
             if [[ -n "$ENTRIES" ]]; then
-              ENTRIES="${ENTRIES},
-${ENTRY}"
+              ENTRIES="${ENTRIES},"$'\n'"${ENTRY}"
             else
               ENTRIES="${ENTRY}"
             fi
           done
 
-          DEVCONTAINER_EXAMPLE='{
-  "features": {
-'"${ENTRIES}"'
-  }
-}'
+          DEVCONTAINER_EXAMPLE=$(printf '{\n  "features": {\n%s\n  }\n}' "${ENTRIES}")
 
           # Create a GitHub release for each changed feature
           for artifact_dir in ./version-artifacts/version-*/; do
@@ -190,19 +185,11 @@ ${ENTRY}"
               F_NAME=$(jq -r '.name // .id' "src/${F_FEATURE}/devcontainer-feature.json")
               F_DESC=$(jq -r '.description // "No description"' "src/${F_FEATURE}/devcontainer-feature.json")
 
+              RELEASE_NOTES=$(printf '## %s %s\n\n%s\n\n### Usage\n\nAdd to your `devcontainer.json`:\n\n```json\n%s\n```' \
+                "${F_NAME}" "${F_VERSION}" "${F_DESC}" "${DEVCONTAINER_EXAMPLE}")
               gh release create "${F_VERSION_TAG}" \
                 --title "${F_NAME} ${F_VERSION}" \
-                --notes "## ${F_NAME} ${F_VERSION}
-
-${F_DESC}
-
-### Usage
-
-Add to your \`devcontainer.json\`:
-
-\`\`\`json
-${DEVCONTAINER_EXAMPLE}
-\`\`\`"
+                --notes "${RELEASE_NOTES}"
             fi
           done
         env:
