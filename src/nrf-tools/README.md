@@ -30,7 +30,9 @@ containers.
     "ghcr.io/the78mole/devcontainer-features/nrf-tools:1": {
       "acceptSeggerEula": true
     }
-  }
+  },
+  "runArgs": ["--privileged"],
+  "mounts": ["source=/dev,target=/dev,type=bind"]
 }
 ```
 
@@ -44,7 +46,9 @@ containers.
       "version": "V796a",
       "acceptSeggerEula": true
     }
-  }
+  },
+  "runArgs": ["--privileged"],
+  "mounts": ["source=/dev,target=/dev,type=bind"]
 }
 ```
 
@@ -135,7 +139,9 @@ ships the same rules.
 
 ## Notes
 
-- Hardware access (USB probe) must be forwarded to the container via `runArgs`
-  or a remote USB/IP setup.
+- Hardware access (USB probe) requires `"runArgs": ["--privileged"]` and
+  `"mounts": ["source=/dev,target=/dev,type=bind"]` in your `devcontainer.json`.
+  Static `--device` entries are resolved at container start and miss probes
+  that are plugged in afterwards.
 - For CI builds without attached hardware, use `west build` only or a
   simulation runner.
