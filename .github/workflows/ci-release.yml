@@ -29,6 +29,25 @@ jobs:
       - name: Run pre-commit
         run: pre-commit run --all-files
 
+      - name: Step summary
+        if: always()
+        run: |
+          if [ "${{ job.status }}" = "success" ]; then
+            echo "## :white_check_mark: pre-commit — all hooks passed" >> "$GITHUB_STEP_SUMMARY"
+            echo "" >> "$GITHUB_STEP_SUMMARY"
+            echo "| Hook |" >> "$GITHUB_STEP_SUMMARY"
+            echo "|------|" >> "$GITHUB_STEP_SUMMARY"
+            grep -E '^\s+-\s+id:' .pre-commit-config.yaml \
+              | sed 's/.*id:[[:space:]]*//' \
+              | sed 's/^/| `/' \
+              | sed 's/$/ |/' \
+              >> "$GITHUB_STEP_SUMMARY"
+          else
+            echo "## :x: pre-commit — hook(s) failed" >> "$GITHUB_STEP_SUMMARY"
+            echo "" >> "$GITHUB_STEP_SUMMARY"
+            echo "One or more hooks failed. Check the logs above." >> "$GITHUB_STEP_SUMMARY"
+          fi
+
   detect-features:
     runs-on: ubuntu-latest
     outputs:
@@ -45,6 +64,15 @@ jobs:
         run: |
           features=$(./.github/scripts/get-features.sh)
           echo "features=$(echo "$features" | tr -d '\n')" >> $GITHUB_OUTPUT
+
+      - name: Step summary
+        run: |
+          features='${{ steps.get-features.outputs.features }}'
+          echo "## :mag: Detected Features" >> "$GITHUB_STEP_SUMMARY"
+          echo "" >> "$GITHUB_STEP_SUMMARY"
+          for f in $(echo "$features" | tr -d '[]"' | tr ',' ' '); do
+            echo "- \`${f}\`" >> "$GITHUB_STEP_SUMMARY"
+          done
 
   test:
     runs-on: ubuntu-latest
@@ -348,12 +376,16 @@ jobs:
           if git rev-parse -q --verify "refs/tags/${tag}" >/dev/null 2>&1 || \
              git ls-remote --exit-code --tags origin "refs/tags/${tag}" >/dev/null 2>&1; then
             echo "Tag ${tag} already exists. Skipping."
+            echo "## :white_check_mark: ${feature}" >> "$GITHUB_STEP_SUMMARY"
+            echo "Version **${current_version}** is unchanged — tag \`${tag}\` already exists." >> "$GITHUB_STEP_SUMMARY"
           else
             git config --local user.email "action@github.com"
             git config --local user.name "GitHub Action"
             git tag "${tag}"
             git push origin "${tag}"
             echo "Created tag ${tag}."
+            echo "## :rocket: ${feature}" >> "$GITHUB_STEP_SUMMARY"
+            echo "Version bumped — created tag \`${tag}\`." >> "$GITHUB_STEP_SUMMARY"
           fi
 
   global-release:
@@ -501,11 +533,26 @@ jobs:
 
           if gh release view "${version}" >/dev/null 2>&1; then
             echo "Release ${version} already exists. Skipping."
+            echo "## :white_check_mark: Global Release ${version}" >> "$GITHUB_STEP_SUMMARY"
+            echo "Release already existed — skipped creation." >> "$GITHUB_STEP_SUMMARY"
           else
             gh release create "${version}" \
               --title "Release ${version}" \
               --notes-file release_notes.md \
               "${tarball}"
+            echo "## :rocket: Global Release ${version}" >> "$GITHUB_STEP_SUMMARY"
+            echo "Created GitHub Release **${version}** with tarball \`${tarball}\`." >> "$GITHUB_STEP_SUMMARY"
+            echo "" >> "$GITHUB_STEP_SUMMARY"
+            echo "### Changed Features" >> "$GITHUB_STEP_SUMMARY"
+            changed_features="${{ steps.changed.outputs.features }}"
+            if [[ -n "${changed_features}" ]]; then
+              for feature in ${changed_features}; do
+                fv=$(jq -r '.version' "src/${feature}/devcontainer-feature.json")
+                echo "- \`${feature}\` **${fv}**" >> "$GITHUB_STEP_SUMMARY"
+              done
+            else
+              echo "_No feature changes — tooling/CI/docs update._" >> "$GITHUB_STEP_SUMMARY"
+            fi
           fi
 
   deploy:
@@ -521,6 +568,31 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v6
 
+      - name: Setup jq
+        run: sudo apt-get update && sudo apt-get install -y jq
+
+      - name: Check registry state before publish
+        id: pre-check
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          existing=""
+          new=""
+          for feature_dir in src/*/; do
+            feature=$(basename "${feature_dir}")
+            version=$(jq -r '.version' "src/${feature}/devcontainer-feature.json")
+            pkg="devcontainer-features%2F${feature}"
+            tags=$(gh api "/orgs/the78mole/packages/container/${pkg}/versions" \
+              --jq '.[].metadata.container.tags[]' 2>/dev/null || true)
+            if echo "${tags}" | grep -qx "${version}"; then
+              existing="${existing}${feature}:${version} "
+            else
+              new="${new}${feature}:${version} "
+            fi
+          done
+          echo "existing=${existing% }" >> "$GITHUB_OUTPUT"
+          echo "new=${new% }" >> "$GITHUB_OUTPUT"
+
       - name: "Publish Features to ghcr.io"
         uses: devcontainers/action@v1
         with:
@@ -529,3 +601,42 @@ jobs:
           generate-docs: "true"
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Step summary
+        if: always()
+        run: |
+          if [ "${{ job.status }}" = "success" ]; then
+            echo "## :package: Deploy to ghcr.io" >> "$GITHUB_STEP_SUMMARY"
+          else
+            echo "## :x: Deploy to ghcr.io — failed" >> "$GITHUB_STEP_SUMMARY"
+          fi
+          echo "" >> "$GITHUB_STEP_SUMMARY"
+          new_list="${{ steps.pre-check.outputs.new }}"
+          if [[ -n "${new_list}" ]]; then
+            echo "### :rocket: Published (new versions)" >> "$GITHUB_STEP_SUMMARY"
+            echo "" >> "$GITHUB_STEP_SUMMARY"
+            echo "| Feature | Version |" >> "$GITHUB_STEP_SUMMARY"
+            echo "|---------|---------|" >> "$GITHUB_STEP_SUMMARY"
+            for entry in ${new_list}; do
+              f="${entry%%:*}"
+              v="${entry##*:}"
+              echo "| \`${f}\` | \`${v}\` |" >> "$GITHUB_STEP_SUMMARY"
+            done
+            echo "" >> "$GITHUB_STEP_SUMMARY"
+          fi
+          existing_list="${{ steps.pre-check.outputs.existing }}"
+          if [[ -n "${existing_list}" ]]; then
+            echo "### :white_check_mark: Skipped (already in registry)" >> "$GITHUB_STEP_SUMMARY"
+            echo "" >> "$GITHUB_STEP_SUMMARY"
+            echo "| Feature | Version |" >> "$GITHUB_STEP_SUMMARY"
+            echo "|---------|---------|" >> "$GITHUB_STEP_SUMMARY"
+            for entry in ${existing_list}; do
+              f="${entry%%:*}"
+              v="${entry##*:}"
+              echo "| \`${f}\` | \`${v}\` |" >> "$GITHUB_STEP_SUMMARY"
+            done
+          fi
+          if [ "${{ job.status }}" != "success" ]; then
+            echo "" >> "$GITHUB_STEP_SUMMARY"
+            echo "Publishing failed. Check the logs above." >> "$GITHUB_STEP_SUMMARY"
+          fi
