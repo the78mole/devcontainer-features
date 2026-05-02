@@ -69,7 +69,7 @@ jobs:
         run: echo "date=$(date -u +'%Y-%m-%d')" >> $GITHUB_OUTPUT
 
       - name: Cache Docker base image
-        uses: actions/cache@v4
+        uses: actions/cache@v5
         with:
           path: /tmp/docker-images
           key: docker-${{ matrix.baseImage }}-${{ steps.date.outputs.date }}
@@ -147,7 +147,7 @@ jobs:
         run: echo "date=$(date -u +'%Y-%m-%d')" >> $GITHUB_OUTPUT
 
       - name: Cache Docker base image
-        uses: actions/cache@v4
+        uses: actions/cache@v5
         with:
           path: /tmp/docker-images
           key: docker-${{ matrix.baseImage }}-${{ steps.date.outputs.date }}
@@ -209,7 +209,7 @@ jobs:
         run: echo "date=$(date -u +'%Y-%m-%d')" >> $GITHUB_OUTPUT
 
       - name: Cache Docker base image
-        uses: actions/cache@v4
+        uses: actions/cache@v5
         with:
           path: /tmp/docker-images
           key: docker-${{ matrix.baseImage }}-${{ steps.date.outputs.date }}
@@ -270,7 +270,7 @@ jobs:
         run: echo "date=$(date -u +'%Y-%m-%d')" >> $GITHUB_OUTPUT
 
       - name: Cache Docker base image
-        uses: actions/cache@v4
+        uses: actions/cache@v5
         with:
           path: /tmp/docker-images
           key: docker-${{ matrix.baseImage }}-${{ steps.date.outputs.date }}
