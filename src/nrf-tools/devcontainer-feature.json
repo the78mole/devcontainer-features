@@ -1,6 +1,6 @@
 {
   "id": "nrf-tools",
-  "version": "1.1.1",
+  "version": "1.1.2",
   "name": "nRF Command Line Tools + J-Link",
   "description": "Installs nrfjprog (nRF Command Line Tools) and J-Link (from the official SEGGER .tgz archive) required for west flash/debug on nRF52/nRF53/nRF91 targets. Headless – no Qt/X11 required.",
   "documentationURL": "https://github.com/the78mole/devcontainer-features/tree/main/src/nrf-tools",
