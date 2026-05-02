@@ -7,7 +7,9 @@
   "containerEnv": {
     "NODE_EXTRA_CA_CERTS": "/etc/ssl/certs/ca-certificates.crt",
     "SSL_CERT_FILE": "/etc/ssl/certs/ca-certificates.crt",
-    "GITHUB_TOKEN": "${localEnv:GITHUB_TOKEN}"
+    "GITHUB_TOKEN": "${localEnv:GITHUB_TOKEN}",
+    "GIT_AUTHOR_NAME": "${localEnv:GIT_AUTHOR_NAME}",
+    "GIT_AUTHOR_EMAIL": "${localEnv:GIT_AUTHOR_EMAIL}"
   },
   "features": {
     "ghcr.io/the78mole/devcontainer-features/cacerts": {
@@ -31,20 +33,48 @@
     "ghcr.io/devcontainers/features/node:1": {
       "version": "lts"
     },
-    "ghcr.io/devcontainers/features/rust:1": { "components": "cog" },
     "ghcr.io/devcontainers/features/github-cli": {
       "extensions": "the78mole/gh-moles,nektos/gh-act"
     }
   },
   "initializeCommand": "bash ${localWorkspaceFolder}/.devcontainer/init-github-token.sh",
-  "postCreateCommand": "npm install -g @devcontainers/cli && ([ -f /tmp/.gh_devcontainer_token ] && gh auth login --with-token < /tmp/.gh_devcontainer_token && rm -f /tmp/.gh_devcontainer_token || true)",
+  "postCreateCommand": "bash ${containerWorkspaceFolder}/.devcontainer/postCreate.sh",
   "mounts": ["source=/tmp,target=/tmp,type=bind"],
   "customizations": {
     "vscode": {
       "extensions": [
         "github.vscode-github-actions",
         "SanjulaGanepola.github-local-actions"
-      ]
+      ],
+      "settings": {
+        "workbench.colorCustomizations": {
+          "activityBar.background": "#1a1a2e",
+          "activityBar.foreground": "#e0e0ff",
+          "activityBar.activeBorder": "#e63946",
+          "activityBar.activeBackground": "#2a1a2e",
+          "sideBar.background": "#16213e",
+          "sideBar.foreground": "#c8d6e5",
+          "sideBarSectionHeader.background": "#0f3460",
+          "sideBarSectionHeader.foreground": "#e0e0ff",
+          "titleBar.activeBackground": "#0f3460",
+          "titleBar.activeForeground": "#ffffff",
+          "titleBar.inactiveBackground": "#0a2540",
+          "titleBar.inactiveForeground": "#9aaab8",
+          "statusBar.background": "#e63946",
+          "statusBar.foreground": "#ffffff",
+          "statusBarItem.hoverBackground": "#c1121f",
+          "tab.activeBackground": "#1a1a2e",
+          "tab.activeForeground": "#ffffff",
+          "tab.inactiveBackground": "#0f3460",
+          "tab.inactiveForeground": "#9aaab8",
+          "tab.activeBorderTop": "#e63946",
+          "editorGroupHeader.tabsBackground": "#0f3460",
+          "focusBorder": "#e63946",
+          "button.background": "#e63946",
+          "button.foreground": "#ffffff",
+          "button.hoverBackground": "#c1121f"
+        }
+      }
     }
   }
 }
