@@ -165,7 +165,10 @@ jobs:
         run: |
           features=$(./.github/scripts/get-features.sh)
           echo "Testing features: $features"
-          devcontainer features test --skip-scenarios . -i ubuntu:latest
+          for feature in $(echo "$features" | jq -r '.[]'); do
+            echo "Testing feature: $feature"
+            devcontainer features test --skip-scenarios --features "$feature" .
+          done
 
   create-releases:
     runs-on: ubuntu-latest
