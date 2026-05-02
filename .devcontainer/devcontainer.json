@@ -6,7 +6,8 @@
   },
   "containerEnv": {
     "NODE_EXTRA_CA_CERTS": "/etc/ssl/certs/ca-certificates.crt",
-    "SSL_CERT_FILE": "/etc/ssl/certs/ca-certificates.crt"
+    "SSL_CERT_FILE": "/etc/ssl/certs/ca-certificates.crt",
+    "GITHUB_TOKEN": "${localEnv:GITHUB_TOKEN}"
   },
   "features": {
     "ghcr.io/the78mole/devcontainer-features/cacerts": {
@@ -34,8 +35,11 @@
       "extensions": "the78mole/gh-moles,nektos/gh-act"
     }
   },
-  "postCreateCommand": "npm install -g @devcontainers/cli",
-  "mounts": ["source=/tmp,target=/tmp,type=bind"],
+  "initializeCommand": "bash ${localWorkspaceFolder}/.devcontainer/init-github-token.sh",
+  "postCreateCommand": "npm install -g @devcontainers/cli && ([ -f /tmp/.gh_devcontainer_token ] && gh auth login --with-token < /tmp/.gh_devcontainer_token && rm -f /tmp/.gh_devcontainer_token || true)",
+  "mounts": [
+    "source=/tmp,target=/tmp,type=bind"
+  ],
   "customizations": {
     "vscode": {
       "extensions": [
