@@ -1,6 +1,6 @@
 {
   "id": "cacerts",
-  "version": "1.1.1",
+  "version": "1.1.2",
   "name": "CA Certificates",
   "description": "Installs CA certificates from URLs or local file paths into the system trust store and runs the OS-specific update command",
   "documentationURL": "https://github.com/the78mole/devcontainer-features/tree/main/src/cacerts",

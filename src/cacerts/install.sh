@@ -183,3 +183,4 @@ echo "🔄 Running ${UPDATE_CMD}..."
 ${UPDATE_CMD}
 echo ""
 echo "✅ CA certificates feature installation complete! Installed ${INSTALLED} certificate(s)."
+# test

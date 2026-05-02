@@ -60,3 +60,10 @@ repos:
         language: system
         files: 'src/.*/(devcontainer-feature\.json|README\.md)$'
         pass_filenames: false
+
+      - id: auto-bump-features
+        name: Auto-bump feature versions for unreleased changes
+        entry: bash scripts/auto-bump-features.sh
+        language: system
+        files: "src/.*"
+        pass_filenames: false

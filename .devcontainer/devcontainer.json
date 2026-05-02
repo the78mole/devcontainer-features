@@ -31,6 +31,7 @@
     "ghcr.io/devcontainers/features/node:1": {
       "version": "lts"
     },
+    "ghcr.io/devcontainers/features/rust:1": { "components": "cog" },
     "ghcr.io/devcontainers/features/github-cli": {
       "extensions": "the78mole/gh-moles,nektos/gh-act"
     }

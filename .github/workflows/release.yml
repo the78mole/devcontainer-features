@@ -51,26 +51,18 @@ jobs:
             exit 1
           fi
 
-          base_sha="${{ github.event.before }}"
-          if [[ -z "${base_sha}" || "${base_sha}" == "0000000000000000000000000000000000000000" ]]; then
-            if git rev-parse --verify HEAD~1 >/dev/null 2>&1; then
-              base_sha=$(git rev-parse HEAD~1)
-            else
-              base_sha=""
-            fi
-          fi
-
+          tag="${feature}/v${current_version}"
           changed=false
-          previous_version=""
-          if [[ -n "${base_sha}" ]] && git cat-file -e "${base_sha}^{commit}" 2>/dev/null; then
-            previous_version=$(git show "${base_sha}:${feature_file}" 2>/dev/null | jq -r '.version // empty' || true)
-            if [[ "${previous_version}" != "${current_version}" ]]; then
-              changed=true
-            fi
+
+          if git rev-parse -q --verify "refs/tags/${tag}" >/dev/null 2>&1 || \
+             git ls-remote --exit-code --tags origin "refs/tags/${tag}" >/dev/null 2>&1; then
+            echo "Tag ${tag} already exists. No release needed."
+          else
+            changed=true
+            echo "Tag ${tag} does not exist. Release needed."
           fi
 
           echo "Current version: ${current_version}"
-          echo "Previous version: ${previous_version:-<none>}"
           echo "Version changed: ${changed}"
 
           echo "version=${current_version}" >> "$GITHUB_OUTPUT"

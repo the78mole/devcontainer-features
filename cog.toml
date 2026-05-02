@@ -1,0 +1,65 @@
+# Cocogitto configuration for devcontainer-features monorepo
+# https://docs.cocogitto.io/reference/config
+
+# Use tag prefix "v" so package tags become e.g. "cacerts/v1.2.0"
+tag_prefix = "v"
+
+# Separator between package name and version tag, matching existing tag format:
+# <feature>/v<version>  e.g. "cacerts/v1.1.1"
+monorepo_version_separator = "/"
+
+# Only consider commits since the latest global semver tag (v-prefix).
+# Feature tags (e.g. cacerts/v1.1.1) are excluded from global version calculation
+# because packages have public_api = false.
+# NOTE: from_latest_tag = true would pick feature tags at HEAD; keep false so cog
+# uses the latest v* global tag (v0.9.1) as base once changes are committed.
+from_latest_tag = false
+ignore_merge_commits = true
+
+# Global repo tag tracks tooling (workflows, scripts, devcontainer setup), not features
+generate_mono_repository_global_tag = true
+
+# Update devcontainer-feature.json and README before tagging (used by `cog bump`)
+pre_package_bump_hooks = [
+    "jq --arg v '{{version}}' '.version = $v' src/{{package}}/devcontainer-feature.json > /tmp/cog-feature.json && mv /tmp/cog-feature.json src/{{package}}/devcontainer-feature.json",
+    "major=$(echo '{{version}}' | cut -d. -f1) && sed -i \"s|ghcr\\.io/the78mole/devcontainer-features/{{package}}:[0-9]*|ghcr.io/the78mole/devcontainer-features/{{package}}:${major}|g\" src/{{package}}/README.md",
+]
+
+[changelog]
+path = "CHANGELOG.md"
+template = "remote"
+remote = "github.com"
+owner = "the78mole"
+repository = "devcontainer-features"
+
+# public_api = false: feature bumps do NOT drive the global repo version
+# The global version only tracks tooling commits (workflows, scripts, devcontainer)
+[monorepo.packages.cacerts]
+path = "src/cacerts"
+changelog_path = "src/cacerts/CHANGELOG.md"
+public_api = false
+
+[monorepo.packages.jumpstarter-cli]
+path = "src/jumpstarter-cli"
+changelog_path = "src/jumpstarter-cli/CHANGELOG.md"
+public_api = false
+
+[monorepo.packages.nrf-tools]
+path = "src/nrf-tools"
+changelog_path = "src/nrf-tools/CHANGELOG.md"
+public_api = false
+
+[monorepo.packages.postgresql]
+path = "src/postgresql"
+changelog_path = "src/postgresql/CHANGELOG.md"
+public_api = false
+
+[monorepo.packages.pre-commit]
+path = "src/pre-commit"
+changelog_path = "src/pre-commit/CHANGELOG.md"
+public_api = false
+
+[monorepo.packages.uv]
+path = "src/uv"
+changelog_path = "src/uv/CHANGELOG.md"
+public_api = false
