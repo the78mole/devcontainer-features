@@ -37,9 +37,7 @@
   },
   "initializeCommand": "bash ${localWorkspaceFolder}/.devcontainer/init-github-token.sh",
   "postCreateCommand": "npm install -g @devcontainers/cli && ([ -f /tmp/.gh_devcontainer_token ] && gh auth login --with-token < /tmp/.gh_devcontainer_token && rm -f /tmp/.gh_devcontainer_token || true)",
-  "mounts": [
-    "source=/tmp,target=/tmp,type=bind"
-  ],
+  "mounts": ["source=/tmp,target=/tmp,type=bind"],
   "customizations": {
     "vscode": {
       "extensions": [
