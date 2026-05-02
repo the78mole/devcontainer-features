@@ -8,7 +8,69 @@
   "reviewers": ["the78mole"],
   "timezone": "Europe/Berlin",
   "labels": ["dependencies"],
+  "customManagers": [
+    {
+      "customType": "regex",
+      "fileMatch": ["^src/uv/devcontainer-feature\\.json$"],
+      "matchStrings": ["\"(?<currentValue>0\\.5\\.[0-9]+)\""],
+      "depNameTemplate": "uv/0.5",
+      "packageNameTemplate": "astral-sh/uv",
+      "datasourceTemplate": "github-releases",
+      "versioningTemplate": "semver",
+      "extractVersionTemplate": "^v?(?<version>.+)$"
+    },
+    {
+      "customType": "regex",
+      "fileMatch": ["^src/uv/devcontainer-feature\\.json$"],
+      "matchStrings": ["\"(?<currentValue>0\\.6\\.[0-9]+)\""],
+      "depNameTemplate": "uv/0.6",
+      "packageNameTemplate": "astral-sh/uv",
+      "datasourceTemplate": "github-releases",
+      "versioningTemplate": "semver",
+      "extractVersionTemplate": "^v?(?<version>.+)$"
+    },
+    {
+      "customType": "regex",
+      "fileMatch": ["^src/uv/devcontainer-feature\\.json$"],
+      "matchStrings": ["\"(?<currentValue>0\\.7\\.[0-9]+)\""],
+      "depNameTemplate": "uv/0.7",
+      "packageNameTemplate": "astral-sh/uv",
+      "datasourceTemplate": "github-releases",
+      "versioningTemplate": "semver",
+      "extractVersionTemplate": "^v?(?<version>.+)$"
+    },
+    {
+      "customType": "regex",
+      "fileMatch": ["^src/uv/devcontainer-feature\\.json$"],
+      "matchStrings": ["\"(?<currentValue>0\\.8\\.[0-9]+)\""],
+      "depNameTemplate": "uv/0.8",
+      "packageNameTemplate": "astral-sh/uv",
+      "datasourceTemplate": "github-releases",
+      "versioningTemplate": "semver",
+      "extractVersionTemplate": "^v?(?<version>.+)$"
+    }
+  ],
   "packageRules": [
+    {
+      "matchDepNames": ["uv/0.5"],
+      "allowedVersions": ">=0.5.0 <0.6.0",
+      "addLabels": ["uv"]
+    },
+    {
+      "matchDepNames": ["uv/0.6"],
+      "allowedVersions": ">=0.6.0 <0.7.0",
+      "addLabels": ["uv"]
+    },
+    {
+      "matchDepNames": ["uv/0.7"],
+      "allowedVersions": ">=0.7.0 <0.8.0",
+      "addLabels": ["uv"]
+    },
+    {
+      "matchDepNames": ["uv/0.8"],
+      "allowedVersions": ">=0.8.0 <0.9.0",
+      "addLabels": ["uv"]
+    },
     {
       "matchManagers": ["github-actions"],
       "addLabels": ["github-actions"]
