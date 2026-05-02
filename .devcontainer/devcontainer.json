@@ -32,9 +32,7 @@
     }
   },
   "postCreateCommand": "npm install -g @devcontainers/cli",
-  "mounts": [
-    "source=/tmp,target=/tmp,type=bind"
-  ],
+  "mounts": ["source=/tmp,target=/tmp,type=bind"],
   "customizations": {
     "vscode": {
       "extensions": ["github.vscode-github-actions"]

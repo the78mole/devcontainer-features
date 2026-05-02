@@ -22,7 +22,5 @@
       "description": "You must read and accept the SEGGER J-Link EULA at https://www.segger.com/downloads/jlink/ before setting this to true. Installation is aborted if this is false."
     }
   },
-  "installsAfter": [
-    "ghcr.io/devcontainers/features/common-utils"
-  ]
+  "installsAfter": ["ghcr.io/devcontainers/features/common-utils"]
 }

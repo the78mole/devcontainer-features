@@ -16,11 +16,11 @@ containers.
 
 ## Options
 
-| Option            | Type    | Default    | Description                                   |
-| ----------------- | ------- | ---------- | --------------------------------------------- |
-| nrfCliVersion     | string  | `10.24.2`  | Version of nRF Command Line Tools to install  |
-| version           | string  | `V796a`    | Version of J-Link to install. See https://www.segger.com/downloads/jlink/ for available versions.   |
-| acceptSeggerEula  | boolean | `false`    | **Required.** Read and accept the SEGGER EULA at https://www.segger.com/downloads/jlink/ first.     |
+| Option           | Type    | Default   | Description                                                                                         |
+| ---------------- | ------- | --------- | --------------------------------------------------------------------------------------------------- |
+| nrfCliVersion    | string  | `10.24.2` | Version of nRF Command Line Tools to install                                                        |
+| version          | string  | `V796a`   | Version of J-Link to install. See <https://www.segger.com/downloads/jlink/> for available versions. |
+| acceptSeggerEula | boolean | `false`   | **Required.** Read and accept the SEGGER EULA at <https://www.segger.com/downloads/jlink/> first.   |
 
 ## Usage
 
