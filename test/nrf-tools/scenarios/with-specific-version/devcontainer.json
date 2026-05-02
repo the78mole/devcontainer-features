@@ -1,0 +1,10 @@
+{
+  "image": "mcr.microsoft.com/devcontainers/base:ubuntu-22.04",
+  "features": {
+    "nrf-tools": {
+      "nrfCliVersion": "10.24.2",
+      "version": "V796a",
+      "acceptSeggerEula": true
+    }
+  }
+}

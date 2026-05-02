@@ -1,0 +1,28 @@
+{
+  "id": "nrf-tools",
+  "version": "1.1.0",
+  "name": "nRF Command Line Tools + J-Link",
+  "description": "Installs nrfjprog (nRF Command Line Tools) and J-Link (from the official SEGGER .tgz archive) required for west flash/debug on nRF52/nRF53/nRF91 targets. Headless – no Qt/X11 required.",
+  "documentationURL": "https://github.com/the78mole/devcontainer-features/tree/main/src/nrf-tools",
+  "licenseURL": "https://github.com/the78mole/devcontainer-features/blob/main/LICENSE",
+  "options": {
+    "nrfCliVersion": {
+      "type": "string",
+      "default": "10.24.2",
+      "description": "Version of nRF Command Line Tools to install (e.g. 10.24.2)"
+    },
+    "version": {
+      "type": "string",
+      "default": "V796a",
+      "description": "Version of J-Link to install (e.g. V796a). See https://www.segger.com/downloads/jlink/ for available versions."
+    },
+    "acceptSeggerEula": {
+      "type": "boolean",
+      "default": false,
+      "description": "You must read and accept the SEGGER J-Link EULA at https://www.segger.com/downloads/jlink/ before setting this to true. Installation is aborted if this is false."
+    }
+  },
+  "installsAfter": [
+    "ghcr.io/devcontainers/features/common-utils"
+  ]
+}

@@ -14,10 +14,11 @@
       "searchCerts": true,
       "ignoreMissing": true
     },
-    "ghcr.io/devcontainers/features/common-utils:2": {
+    "ghcr.io/the78mole/features/common-utils:2": {
       "installZsh": true,
-      "configureZshAsDefaultShell": false,
-      "installOhMyZsh": false,
+      "configureZshAsDefaultShell": true,
+      "installOhMyZsh": true,
+      "ohMyZshTheme": "fino",
       "upgradePackages": false,
       "username": "vscode",
       "userUid": "automatic",
@@ -31,6 +32,9 @@
     }
   },
   "postCreateCommand": "npm install -g @devcontainers/cli",
+  "mounts": [
+    "source=/tmp,target=/tmp,type=bind"
+  ],
   "customizations": {
     "vscode": {
       "extensions": ["github.vscode-github-actions"]
