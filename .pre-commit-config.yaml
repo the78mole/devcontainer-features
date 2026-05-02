@@ -35,7 +35,7 @@ repos:
     hooks:
       - id: validate-devcontainer-features
         name: Validate devcontainer feature configurations
-        entry: bash -c 'for file in src/*/devcontainer-feature.json; do echo "Validating $file"; python3 -m json.tool "$file" > /dev/null || exit 1; done'
+        entry: bash -c 'for file in src/*/devcontainer-feature.json; do echo "Validating $file"; jq empty "$file" || exit 1; done'
         language: system
         files: 'src/.*/devcontainer-feature\.json$'
         pass_filenames: false
