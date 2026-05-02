@@ -1,0 +1,11 @@
+{
+  "with-specific-version": {
+    "image": "mcr.microsoft.com/devcontainers/base:ubuntu-22.04",
+    "features": {
+      "jlink": {
+        "version": "V796a",
+        "acceptSeggerEula": true
+      }
+    }
+  }
+}

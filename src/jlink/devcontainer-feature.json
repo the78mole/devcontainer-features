@@ -1,0 +1,21 @@
+{
+  "id": "jlink",
+  "version": "0.1.0",
+  "name": "SEGGER J-Link",
+  "description": "Installs the SEGGER J-Link toolset (JLinkExe, JLinkGDBServerCLExe, JLinkRTTClient, JLinkRTTLogger) from the official SEGGER .tgz archive. Headless – no Qt/X11 required. Requires EULA acceptance.",
+  "documentationURL": "https://github.com/the78mole/devcontainer-features/tree/main/src/jlink",
+  "licenseURL": "https://github.com/the78mole/devcontainer-features/blob/main/LICENSE",
+  "options": {
+    "version": {
+      "type": "string",
+      "default": "V796a",
+      "description": "Version of J-Link to install (e.g. V796a). See https://www.segger.com/downloads/jlink/ for available versions."
+    },
+    "acceptSeggerEula": {
+      "type": "boolean",
+      "default": false,
+      "description": "You must read and accept the SEGGER J-Link EULA at https://www.segger.com/downloads/jlink/ before setting this to true. Installation is aborted if this is false."
+    }
+  },
+  "installsAfter": ["ghcr.io/devcontainers/features/common-utils"]
+}

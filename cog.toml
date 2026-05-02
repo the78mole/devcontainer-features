@@ -34,6 +34,11 @@ repository = "devcontainer-features"
 
 # public_api = false: feature bumps do NOT drive the global repo version
 # The global version only tracks tooling commits (workflows, scripts, devcontainer)
+[monorepo.packages.jlink]
+path = "src/jlink"
+changelog_path = "src/jlink/CHANGELOG.md"
+public_api = false
+
 [monorepo.packages.cacerts]
 path = "src/cacerts"
 changelog_path = "src/cacerts/CHANGELOG.md"
