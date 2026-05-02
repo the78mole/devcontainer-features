@@ -503,7 +503,7 @@ jobs:
             echo "Release ${version} already exists. Skipping."
           else
             gh release create "${version}" \
-              --title "${version} — ${subject}" \
+              --title "Release ${version}" \
               --notes-file release_notes.md \
               "${tarball}"
           fi
