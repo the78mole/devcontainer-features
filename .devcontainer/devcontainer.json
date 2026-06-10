@@ -30,7 +30,7 @@
     "ghcr.io/the78mole/devcontainer-features/uv:1.1.0": {},
     "ghcr.io/the78mole/devcontainer-features/pre-commit": {},
     "ghcr.io/devcontainers/features/docker-outside-of-docker:1": {},
-    "ghcr.io/devcontainers/features/node:1": {
+    "ghcr.io/devcontainers/features/node:2": {
       "version": "lts"
     },
     "ghcr.io/devcontainers/features/github-cli": {
