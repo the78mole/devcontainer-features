@@ -16,7 +16,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
-        uses: actions/checkout@v6
+        uses: actions/checkout@v7
 
       - name: Set up Python
         uses: actions/setup-python@v6
@@ -54,7 +54,7 @@ jobs:
       features: ${{ steps.get-features.outputs.features }}
     steps:
       - name: Checkout
-        uses: actions/checkout@v6
+        uses: actions/checkout@v7
 
       - name: Setup jq
         run: sudo apt-get update && sudo apt-get install -y jq
@@ -87,7 +87,7 @@ jobs:
           - mcr.microsoft.com/devcontainers/base:ubuntu
     steps:
       - name: Checkout
-        uses: actions/checkout@v6
+        uses: actions/checkout@v7
 
       - name: "Install latest devcontainer CLI"
         run: npm install -g @devcontainers/cli
@@ -132,7 +132,7 @@ jobs:
         features: ${{ fromJson(needs.detect-features.outputs.features || '["postgresql"]') }}
     steps:
       - name: Checkout
-        uses: actions/checkout@v6
+        uses: actions/checkout@v7
 
       - name: "Install latest devcontainer CLI"
         run: npm install -g @devcontainers/cli
@@ -145,7 +145,7 @@ jobs:
     needs: pre-commit
     steps:
       - name: Checkout
-        uses: actions/checkout@v6
+        uses: actions/checkout@v7
 
       - name: "Install latest devcontainer CLI"
         run: npm install -g @devcontainers/cli
@@ -165,7 +165,7 @@ jobs:
           - debian:latest
     steps:
       - name: Checkout
-        uses: actions/checkout@v6
+        uses: actions/checkout@v7
 
       - name: "Install latest devcontainer CLI"
         run: npm install -g @devcontainers/cli
@@ -227,7 +227,7 @@ jobs:
           - mcr.microsoft.com/devcontainers/python:3.12
     steps:
       - name: Checkout
-        uses: actions/checkout@v6
+        uses: actions/checkout@v7
 
       - name: "Install latest devcontainer CLI"
         run: npm install -g @devcontainers/cli
@@ -288,7 +288,7 @@ jobs:
           - debian:latest
     steps:
       - name: Checkout
-        uses: actions/checkout@v6
+        uses: actions/checkout@v7
 
       - name: "Install latest devcontainer CLI"
         run: npm install -g @devcontainers/cli
@@ -354,7 +354,7 @@ jobs:
         feature: ${{ fromJson(needs.detect-features.outputs.features) }}
     steps:
       - name: Checkout
-        uses: actions/checkout@v6
+        uses: actions/checkout@v7
         with:
           fetch-depth: 0
 
@@ -403,7 +403,7 @@ jobs:
       contents: write
     steps:
       - name: Checkout
-        uses: actions/checkout@v6
+        uses: actions/checkout@v7
         with:
           fetch-depth: 0
 
@@ -566,7 +566,7 @@ jobs:
       packages: write
     steps:
       - name: Checkout
-        uses: actions/checkout@v6
+        uses: actions/checkout@v7
 
       - name: Setup jq
         run: sudo apt-get update && sudo apt-get install -y jq
