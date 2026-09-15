@@ -8,7 +8,7 @@
   "options": {
     "version": {
       "type": "string",
-      "proposals": ["latest", "0.5.31", "0.6.17", "0.7.22", "0.8.13", "0.8.14"],
+      "proposals": ["latest", "0.5.31", "0.6.17", "0.7.22", "0.8.24", "0.8.24"],
       "default": "latest",
       "description": "Version of uv to install"
     }
