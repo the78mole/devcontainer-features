@@ -11,6 +11,18 @@ on:
         required: false
         default: ""
 
+# Only ever release the current tip of main. Back-to-back merges (typically a
+# batch of Renovate PRs) would otherwise start overlapping runs that each derive
+# the same next version from `git describe` and race to push that tag. Worse,
+# a tag on a superseded commit whose .github/workflows/ content no longer matches
+# the default branch is rejected outright:
+#   refusing to allow a GitHub App to create or update workflow
+#   `.github/workflows/ci-release.yml` without `workflows` permission
+# Cancelling superseded runs avoids both; the tip release contains their changes.
+concurrency:
+  group: ci-release-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
   pre-commit:
     runs-on: ubuntu-latest
