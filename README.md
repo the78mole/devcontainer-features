@@ -12,6 +12,8 @@ This repository provides the following devcontainer features:
   client tools with automatic setup
 - [`uv`](./src/uv/README.md) - An extremely fast Python package and project
   manager written in Rust
+- [`xilinx-bootgen`](./src/xilinx-bootgen/README.md) - AMD/Xilinx bootgen
+  boot image generator, installed from the Debian/Ubuntu package
 
 ## Usage
 

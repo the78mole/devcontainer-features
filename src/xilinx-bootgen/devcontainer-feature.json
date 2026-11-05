@@ -1,0 +1,16 @@
+{
+  "id": "xilinx-bootgen",
+  "version": "1.0.0",
+  "name": "Xilinx Bootgen",
+  "description": "Installs AMD/Xilinx bootgen (boot image generator for Zynq, ZynqMP and Versal) from the Debian/Ubuntu package repositories",
+  "documentationURL": "https://github.com/the78mole/devcontainer-features/tree/main/src/xilinx-bootgen",
+  "licenseURL": "https://github.com/the78mole/devcontainer-features/blob/main/LICENSE",
+  "options": {
+    "version": {
+      "type": "string",
+      "proposals": ["latest"],
+      "default": "latest",
+      "description": "Version of the 'xilinx-bootgen' package to install: 'latest' (repository candidate) or an exact package version, e.g. '2022.2-2+b1'"
+    }
+  }
+}

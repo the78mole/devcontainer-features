@@ -1,0 +1,16 @@
+{
+  "debian": {
+    "image": "debian:latest",
+    "features": {
+      "xilinx-bootgen": {}
+    }
+  },
+  "ubuntu-devcontainer": {
+    "image": "mcr.microsoft.com/devcontainers/base:ubuntu",
+    "features": {
+      "xilinx-bootgen": {
+        "version": "latest"
+      }
+    }
+  }
+}
