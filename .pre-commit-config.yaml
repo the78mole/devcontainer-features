@@ -1,3 +1,9 @@
+# Use the Node.js already installed on the machine/CI runner for node-based
+# hooks (markdownlint, prettier). Otherwise nodeenv resolves "latest", which can
+# be an unparsable pre-release (e.g. 27.0.0-alpha) and breaks the setup.
+default_language_version:
+  node: system
+
 repos:
   - repo: https://github.com/pre-commit/pre-commit-hooks
     rev: v6.0.0
